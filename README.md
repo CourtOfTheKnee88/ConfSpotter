@@ -9,4 +9,6 @@ Suggested Key Features:
 - Conference networking and attendee matching
 - Publication outcome tracking
 
+Team Leader - Courtney Jackson (Courtney.Jackson@maine.edu)
+Esther Greene (Esther.Greene@maine.edu), Samuel Fickett (Samuel.Fickett@maine.edu), Seth Tedder (Seth.Tedder@maine.edu)
 Google Drive: https://docs.google.com/document/d/17Stc62MJ4LH-gEOT_NdcwDbSWMRVzchYqExX04Cgea0/edit?usp=sharing
