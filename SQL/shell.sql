@@ -29,3 +29,18 @@ create table Conferences(
     unique (CID),
     unique (Title)
 );
+
+CREATE TABLE Location (
+	LID INT AUTO_INCREMENT PRIMARY KEY,
+    Street_Address VARCHAR(255) NOT NULL,
+    City VARCHAR(100) NOT NULL,
+    State VARCHAR(100) NOT NULL,
+    Zip VARCHAR(15) NOT NULL,
+    Country VARCHAR(100) NOT NULL,
+    
+    CONSTRAINT check_zip_format CHECK (Zip REGEXP '^[9Aza-z-=]+$'),
+    CONSTRAINT check_country_not_empty CHECK (Country <> '')
+) ENGINE=InnoDB;
+
+CREATE INDEX index_city_state ON Location (City, State);
+CREATE INDEX index_zip ON Location (Zip);
