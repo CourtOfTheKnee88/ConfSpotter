@@ -34,7 +34,7 @@ Paper Entity - Courtney\
 Python Script connecting the database - Courtney\
 \
 **DUE NOVEMEBER 11TH 11:00 AM**\
-Indexing Scprit - Ester
+Indexing Scprit - Esther
 
 ## Stored Procedures and Functions
 **DUE NOVEMEBR 11TH 11:00 AM**\
