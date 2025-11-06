@@ -34,28 +34,31 @@ Paper Entity - Courtney\
 Python Script connecting the database - Courtney\
 \
 **DUE NOVEMEBER 11TH 11:00 AM**\
-Indexing Scprit - Esther
+Indexing Scprits - Esther
+Indexing Scripts - Courtney
 
 ## Stored Procedures and Functions
-**DUE NOVEMEBR 11TH 11:00 AM**\
-Scripts implementing key system operations - Courtney
+**DUE NOVEMEBR 14TH 11:00 AM**\
+Scripts implementing key system operations - ALL MEMEMBERS
 
 ## Data Scraping Scripts and Documentation
-**DUE NOVEMEBR 11TH 11:00 AM**\
+**DUE NOVEMEBR 10TH 11:00 AM**\
 Write a python script to scarp data from these 3 websites:
 
 1. [ACM](https://www.acm.org/conferences)
 2. [SIGCHI](https://sigchi.org/conferences/)
 3. [CIS.IEEE](https://cis.ieee.org/conferences/conference-calendar)
-Source code for scraping with error handling and validation.\
-Document source websites, sample outputs, and cleaning steps.\
-The code for this part must be in Python programming language.\
-The results should be saved as a .csv or .json file and being able to import it to MySQL.\
-Sam
+- Sam
+
 
 ## Sample Data and Data Cleaning Documentation
+
 **DUE NOVEMEBR 11TH 11:00 AM**\
-Create scripts and/or CSV files for sample data inserts, noting how the data was validated and cleaned - Seth
+Data cleaning and normalization - Courtney \
+
+**DUE NOVEMEBR 12TH 11:00 AM**\
+Create scripts and/or CSV files for sample data inserts  - Seth
+
 
 ## Query Optimization Analysis
 **DUE NOVEMEBR 14TH 11:59 PM**\
