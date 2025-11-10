@@ -34,7 +34,7 @@ Paper Entity - Courtney\
 Python Script connecting the database - Courtney\
 \
 **DUE NOVEMEBER 11TH 11:00 AM**\
-Indexing Scprits - Esther
+Indexing Scprits - Esther \
 Indexing Scripts - Courtney
 
 ## Stored Procedures and Functions
@@ -54,7 +54,7 @@ Write a python script to scarp data from these 3 websites:
 ## Sample Data and Data Cleaning Documentation
 
 **DUE NOVEMEBR 11TH 11:00 AM**\
-Data cleaning and normalization - Courtney \
+Data cleaning and normalization - Courtney 
 
 **DUE NOVEMEBR 12TH 11:00 AM**\
 Create scripts and/or CSV files for sample data inserts  - Seth
