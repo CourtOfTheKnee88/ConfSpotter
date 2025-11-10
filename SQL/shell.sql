@@ -1,46 +1,79 @@
-CREATE DATABASE confspotter;
-use confspotter;
-
-Create table Papers (
-    PaperID INT PRIMARY KEY,
-    TypeOfPaper VARCHAR(50),
-    Topic VARCHAR(100),
-    DueDate DATETIME
-)
-
-CREATE TABLE user (
-	Interest_1 varchar(255),
-    Interest_2 varchar(255),
-    Interest_3 varchar(255),
-    Phone char(10) CONSTRAINT chk_phone CHECK (phone not like '%[^0-9]%'),
-    username varchar(255),
-    email varchar(255) constraint email_check CHECK(instr(email,'%@%.%')>0),
-    ID varchar(255),
-    PRIMARY KEY (ID)
-)
-
-create table Conferences(
-    CID varchar(6) not null auto_increment, 
-    Title varchar(99) not null,
-    State_Date DATETIME not null,
-    End_Date DATETIME not null,
-    Descrip varchar(99) not null,
-    primary key (CID),
-    unique (CID),
-    unique (Title)
-);
+CREATE DATABASE IF NOT EXISTS confspotter;
+USE confspotter;
 
 CREATE TABLE Location (
-	LID INT AUTO_INCREMENT PRIMARY KEY,
+    LID INT AUTO_INCREMENT PRIMARY KEY,
     Street_Address VARCHAR(255) NOT NULL,
     City VARCHAR(100) NOT NULL,
     State VARCHAR(100) NOT NULL,
     Zip VARCHAR(15) NOT NULL,
     Country VARCHAR(100) NOT NULL,
-    
-    CONSTRAINT check_zip_format CHECK (Zip REGEXP '^[9Aza-z-=]+$'),
+    CONSTRAINT check_zip_format CHECK (Zip REGEXP '^[0-9A-Za-z \-]+$'),
     CONSTRAINT check_country_not_empty CHECK (Country <> '')
+) ENGINE=InnoDB;
+
+CREATE TABLE Conferences(
+    CID INT NOT NULL AUTO_INCREMENT,
+    Title VARCHAR(255) NOT NULL,
+    Start_Date DATETIME NOT NULL,
+    End_Date DATETIME NOT NULL,
+    Descrip TEXT,
+    LID INT NULL,
+    PRIMARY KEY (CID),
+    UNIQUE KEY uq_conference_title (Title),
+    KEY idx_conferences_lid (LID),
+    CONSTRAINT fk_conference_location FOREIGN KEY (LID) REFERENCES Location(LID) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE Papers (
+    PID INT NOT NULL AUTO_INCREMENT,
+    TypeOfPaper VARCHAR(50) NOT NULL,
+    Topic VARCHAR(100) NOT NULL,
+    DueDate DATETIME NOT NULL,
+    CID INT NULL,
+    PRIMARY KEY (PID),
+    CONSTRAINT chk_due_date CHECK (DueDate > NOW()),
+    -- Get add types of papers via web scrapping and then update the contraints
+    CONSTRAINT chk_typeofpaper CHECK (TypeOfPaper IN ('Full Paper', 'Short Paper', 'Poster', 'Demo')),
+    CONSTRAINT chk_topic CHECK (Topic <> ''),
+    KEY idx_papers_cid (CID),
+    KEY idx_due_date (DueDate),
+    KEY idx_topic (Topic),
+    CONSTRAINT fk_paper_conference FOREIGN KEY (CID) REFERENCES Conferences(CID) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE `user` (
+    ID INT NOT NULL AUTO_INCREMENT,
+    username VARCHAR(255),
+    email VARCHAR(255) NULL,
+    Phone CHAR(10) NULL,
+    Interest_1 VARCHAR(255),
+    Interest_2 VARCHAR(255),
+    Interest_3 VARCHAR(255),
+    PRIMARY KEY (ID),
+    CONSTRAINT chk_phone CHECK (Phone NOT REGEXP '[^0-9]'),
+    CONSTRAINT email_check CHECK (email IS NULL OR INSTR(email,'@')>0)
 ) ENGINE=InnoDB;
 
 CREATE INDEX index_city_state ON Location (City, State);
 CREATE INDEX index_zip ON Location (Zip);
+
+-- Index for join between Conferences and Location (conferences.LID)
+CREATE INDEX idx_conferences_location ON Conferences (LID);
+
+-- Index for join between Papers and Conferences (papers.CID)
+CREATE INDEX idx_papers_conference ON Papers (CID);
+
+-- Indexes for filtering/sorting/searching papers
+CREATE INDEX idx_due_date ON Papers (DueDate);
+CREATE INDEX idx_topic ON Papers (Topic);
+
+-- Join Conferences with Location
+SELECT c.CID, c.Title, l.City, l.State, l.Country
+FROM Conferences c
+JOIN Location l ON c.LID = l.LID;
+
+-- Join Papers with Conferences
+SELECT p.PID, p.Topic, p.DueDate, c.CID, c.Title
+FROM Papers p
+JOIN Conferences c ON p.CID = c.CID;
