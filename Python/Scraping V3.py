@@ -94,7 +94,9 @@ def fetch_page_details(url):
     try:
         response = requests.get(url, timeout=10)
         if response.status_code != 200:
-            return "", "", ""
+            # Ensure we always return four values (year, start_date, end_date, location)
+            # so callers that unpack four values won't raise a ValueError.
+            return "", "", "", ""
         soup = BeautifulSoup(response.text, 'html.parser')
         year = extract_year(url) or extract_year(soup.title.string if soup.title else "")
         text = soup.get_text(separator=' ', strip=True)
