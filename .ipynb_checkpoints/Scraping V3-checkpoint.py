@@ -135,11 +135,8 @@ def fetch_sigchi_conferences():
 
         seen_links.add(href)
         full_link = href if href.startswith("http") else urljoin("https://sigchi.org", href)
-        
-        fetch_link = fetch_page_details(full_link)
-        if len(fetch_link) == 4:
-            print(fetch_link)
-            year, start_date, end_date, location = fetch_link
+
+        year, start_date, end_date, location = fetch_page_details(full_link)
 
         conferences.append({
             "source": "SIGCHI",
@@ -181,9 +178,7 @@ def fetch_sigplan_conferences():
         seen_links.add(href)
         full_link = href if href.startswith("http") else urljoin("https://sigplan.org", href)
 
-        fetch_page = fetch_page_details(full_link)
-        if len(fetch_page) == 4:
-            year, start_date, end_date, location = fetch_page
+        year, start_date, end_date, location = fetch_page_details(full_link)
 
         conferences.append({
             "source": "SIGPLAN",
