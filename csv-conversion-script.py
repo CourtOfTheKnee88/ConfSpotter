@@ -9,7 +9,7 @@ import mysql.connector
 
 #connects to database.
 connection = mysql.connector.connect(       # Replace values with those that match your database.
-    host='localhost', port=3306, user='root', password='1298', database='confspotter') 
+    host='localhost', port=3306, user='root', password='chickenlittle', database='confspotter') 
 
 #facilitates interaction with the database.
 cursor = connection.cursor()
