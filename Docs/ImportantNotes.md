@@ -31,6 +31,12 @@ Before Running Web Scrapping Ensure that these packages are installed:
 To load Web Scraping Data:
 python3 "Python/Scraping V3.py"
 
+To Convert to CSV:
+python3 "Python/csv-conversion-script.py"
+
+To load Web Scraping Data into database:
+python Python/import_scraped_data.py
+
 To View Data in Tables:
 
 View all conferences:
@@ -46,7 +52,7 @@ View all locations:
 mysql -u ConfSpotter -pchickenlittle -e "USE confspotter; SELECT \* FROM Location;"
 
 Count rows in each table:
-mysql -u ConfSpotter -pchickenlittle -e "USE confspotter; SELECT 'Conferences' as Table_Name, COUNT(_) as Row_Count FROM Conferences UNION SELECT 'Papers', COUNT(_) FROM Papers UNION SELECT 'Users', COUNT(_) FROM user UNION SELECT 'Locations', COUNT(_) FROM Location;"
+mysql -u ConfSpotter -pchickenlittle -e "USE confspotter; SELECT 'Conferences' as Table*Name, COUNT(*) as Row*Count FROM Conferences UNION SELECT 'Papers', COUNT(*) FROM Papers UNION SELECT 'Users', COUNT(_) FROM user UNION SELECT 'Locations', COUNT(_) FROM Location;"
 
 Interactive MySQL session:
 mysql -u ConfSpotter -pchickenlittle confspotter
