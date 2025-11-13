@@ -77,3 +77,19 @@ JOIN Location l ON c.LID = l.LID;
 SELECT p.PID, p.Topic, p.DueDate, c.CID, c.Title
 FROM Papers p
 JOIN Conferences c ON p.CID = c.CID;
+
+-- Index to speed up lookups when searching by email
+CREATE INDEX index_user_email ON user(email);
+
+-- Index to filter user by interests
+CREATE INDEX index_user_interest1 ON user(Interest_1);
+CREATE INDEX index_user_interest2 ON user(Interest_2);
+CREATE INDEX index_user_interest3 ON user(Interest_3);
+
+-- Index to filter by geographic region (country)
+CREATE INDEX index_location_country ON Location(Country);
+
+-- Index to improve text searches for conferences by title or keywords
+-- How full text works: https://dev.mysql.com/doc/refman/8.4/en/innodb-fulltext-index.html
+ALTER TABLE Conferences
+ADD FULLTEXT INDEX fullText_conference_title_desc (Title, Descrip);
