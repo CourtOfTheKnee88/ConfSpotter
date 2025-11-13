@@ -12,3 +12,12 @@ Suggested Key Features:
 Team Leader - Courtney Jackson (Courtney.Jackson@maine.edu)
 Esther Greene (Esther.Greene@maine.edu), Samuel Fickett (Samuel.Fickett@maine.edu), Seth Tedder (Seth.Tedder@maine.edu)
 Google Drive: https://docs.google.com/document/d/17Stc62MJ4LH-gEOT_NdcwDbSWMRVzchYqExX04Cgea0/edit?usp=sharing
+
+# Web Scraping Steps
+If the following packages aren't already installed, please install them:
+ - requests
+ - pandas
+ - beautifulsoup4
+ - re
+ - urllib.parse
+Once all packages are installed to python, all you need to do is run the program. 
