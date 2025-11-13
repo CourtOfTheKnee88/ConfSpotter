@@ -16,14 +16,14 @@ INSERT INTO Location (Street_Address, City, State, Zip, Country) VALUES
 
 
 -- Conferences Table 
-INSERT INTO Conferences (Title, State_Date, End_Date, Descrip) VALUES
+INSERT INTO Conferences (Title, Start_Date, End_Date, Descrip) VALUES
 ('Maine AI Summit 2026', '2026-03-10 09:00:00', '2026-03-12 17:00:00', 'Leading conference for artificial intelligence research.'),
 ('Sustainable Energy Expo ME', '2026-06-05 08:30:00', '2026-06-07 18:00:00', 'Focus on renewable technologies and policy.'),
 ('New England Digital Marketing', '2026-11-20 10:00:00', '2026-11-20 19:30:00', 'Annual event covering SEO, content, and social media.');
 
 
 -- Papers Table 
-INSERT INTO Papers (PaperID, TypeOfPaper, Topic, DueDate) VALUES
+INSERT INTO Papers (PID, TypeOfPaper, Topic, DueDate) VALUES
 (1, 'Full Paper', 'Explainable AI in Healthcare', '2025-12-01 23:59:00'),
 (2, 'Short Paper', 'Geothermal Power Efficiency', '2026-01-15 23:59:00'),
 (3, 'Poster', 'Optimizing Ad Campaigns with ML', '2026-09-01 23:59:00'),
