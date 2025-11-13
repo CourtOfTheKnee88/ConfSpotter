@@ -20,4 +20,5 @@ If the following packages aren't already installed, please install them:
  - beautifulsoup4
  - re
  - urllib.parse
+
 Once all packages are installed to python, all you need to do is run the program. 
