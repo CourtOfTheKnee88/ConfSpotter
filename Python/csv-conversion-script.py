@@ -19,7 +19,7 @@ with open('conferences_normalized.csv', newline='') as data:
     reader = csv.DictReader(data)
     for x in reader:
         if all(i != '' or None for i in x):
-            cursor.execute("INSERT INTO Conferences (CID, Title, State_Date, End_Date, Descrip) VALUES (%s, %s, %s, %s, %s)",
+            cursor.execute("INSERT INTO Conferences (CID, Title, Start_Date, End_Date, Descrip) VALUES (%s, %s, %s, %s, %s)",
                            # This line was sourced from stackoverflow at:
                            # https://stackoverflow.com/questions/2257441/random-string-generation-with-upper-case-letters-and-digits 
                            (''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(N)),
