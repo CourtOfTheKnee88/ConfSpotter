@@ -1,6 +1,7 @@
 # author: Seth Tedder
 # results prior to indexing -- Execution Time: 0.0 seconds
 # results after indexing -- Execution Time: 0.0 seconds
+# For testing, set up the database without indexing first, then run this script.  After that, run indexing to the database and run this script again to compare results.
 
 import mysql.connector
 import time
