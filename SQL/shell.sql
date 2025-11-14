@@ -19,6 +19,7 @@ CREATE TABLE Conferences(
     End_Date DATETIME NOT NULL,
     Descrip TEXT,
     LID INT NULL,
+    link VARCHAR(255) NULL,
     PRIMARY KEY (CID),
     UNIQUE KEY uq_conference_title (Title),
     KEY idx_conferences_lid (LID),

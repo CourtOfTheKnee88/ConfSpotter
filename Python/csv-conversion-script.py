@@ -22,7 +22,7 @@ with open('conferences_normalized.csv', newline='') as data:
             print(x)
             # This line was sourced from stackoverflow at:
             # https://stackoverflow.com/questions/2257441/random-string-generation-with-upper-case-letters-and-digits 
-            cursor.execute("INSERT INTO Conferences (Title, Start_Date, End_Date, Descrip) VALUES (%s, %s, %s, %s)",
-                           (x['name'], x['start_date'], x['end_date'], x['location'][:99]))
+            cursor.execute("INSERT INTO Conferences (Title, Start_Date, End_Date, Descrip, link) VALUES (%s, %s, %s, %s, %s)",
+                           (x['name'], x['start_date'], x['end_date'], x['location'][:99], x['link']))
 connection.commit()
 connection.close()

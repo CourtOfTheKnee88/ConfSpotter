@@ -37,6 +37,12 @@ To clean the data:
 To Convert to CSV and import into database:
 `python3 "Python/csv-conversion-script.py"`
 
+To scrap paper deadlines:
+`python3 "Python/PaperScrapping.py"`
+
+To Run the Stored Procedures and Triggers:
+`mysql -u ConfSpotter -pchickenlittle confspotter < "SQL/Stored_Procedures and Triggers.sql"`
+
 To View Data in Tables:
 
 View all conferences:
@@ -56,6 +62,10 @@ Count rows in each table:
 
 Interactive MySQL session:
 `mysql -u ConfSpotter -pchickenlittle confspotter`
+
+Sample Constraint Violation:
+INSERT INTO Location (Street_Address, City, State, Zip, Country)
+VALUES ('123 Main St', 'Boston', 'MA', '!@#$%', 'USA');
 
 To drop all the tables:
 `mysql -u ConfSpotter -pchickenlittle -e "USE confspotter; SET FOREIGN_KEY_CHECKS = 0; DROP TABLE IF EXISTS Papers; DROP TABLE IF EXISTS Conferences; DROP TABLE IF EXISTS user; DROP TABLE IF EXISTS Location; SET FOREIGN_KEY_CHECKS = 1;"`

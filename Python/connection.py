@@ -7,6 +7,7 @@ def get_connection():
         conn = mysql.connector.connect(
             host="localhost",
             user="ConfSpotter",
+            port="3306",
             password="chickenlittle",
             database="confspotter",
             autocommit=True,
