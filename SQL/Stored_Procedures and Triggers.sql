@@ -31,13 +31,11 @@ BEGIN
     DECLARE user_count INT DEFAULT 0;
     DECLARE found_user_id INT DEFAULT NULL;
     
-    -- Check if user exists by email or phone
     SELECT COUNT(*), MAX(ID) INTO user_count, found_user_id
     FROM user
     WHERE (email = user_email AND user_email IS NOT NULL)
        OR (Phone = user_phone AND user_phone IS NOT NULL);
     
-    -- Set output parameters
     IF user_count > 0 THEN
         SET exists_flag = TRUE;
         SET existing_user_id = found_user_id;
@@ -48,12 +46,10 @@ BEGIN
 END //
 DELIMITER ;
 
--- ========================================
--- TRIGGERS
--- ========================================
+-- Triggers
 
 -- Trigger to automatically delete conferences after their end date has passed
--- This trigger runs daily via an event scheduler
+-- Runs daily via an event scheduler
 DELIMITER //
 CREATE EVENT IF NOT EXISTS DeleteExpiredConferences
 ON SCHEDULE EVERY 1 DAY
