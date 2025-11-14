@@ -32,6 +32,6 @@ INSERT INTO Papers (PID, TypeOfPaper, Topic, DueDate) VALUES
 
 -- User Table 
 INSERT INTO user (ID, username, email, Phone, Interest_1, Interest_2, Interest_3) VALUES
-('U001', 'ajohnson', 'a.johnson@corp.com', '5551234567', 'AI', 'Ethics', 'Data Science'),
-('U002', 'mgarcia', 'maria.g@webmail.org', '5559876543', 'Renewables', 'Policy', 'Solar'),
-('U003', 'clee', 'c.lee@university.edu', '5551112222', 'Marketing', 'ML', 'Analytics');
+(1, 'ajohnson', 'a.johnson@corp.com', '5551234567', 'AI', 'Ethics', 'Data Science'),
+(2, 'mgarcia', 'maria.g@webmail.org', '5559876543', 'Renewables', 'Policy', 'Solar'),
+(3, 'clee', 'c.lee@university.edu', '5551112222', 'Marketing', 'ML', 'Analytics');

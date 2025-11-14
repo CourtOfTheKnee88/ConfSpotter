@@ -9,20 +9,20 @@ import mysql.connector
 
 #connects to database.
 connection = mysql.connector.connect(       # Replace values with those that match your database.
-    host='localhost', port=3306, user='ConfSpotter', password='chickenlittle', database='confspotter') 
+    host='localhost', user='ConfSpotter', password='chickenlittle', database='confspotter') 
 
 #facilitates interaction with the database.
-cursor = connection.cursor
+cursor = connection.cursor()
 
 # Accesses csv file and adds all valid lines to database
 with open('conferences_normalized.csv', newline='') as data:
     reader = csv.DictReader(data)
     for x in reader:
-        if all(i != '' or None for i in x):
-            cursor.execute("INSERT INTO Conferences (CID, Title, Start_Date, End_Date, Descrip) VALUES (%s, %s, %s, %s, %s)",
-                           # This line was sourced from stackoverflow at:
-                           # https://stackoverflow.com/questions/2257441/random-string-generation-with-upper-case-letters-and-digits 
-                           (''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(N)),
-                            x[1], x[4], x[5], x[6]))
+        if all(x.values()):
+            print(x)
+            # This line was sourced from stackoverflow at:
+            # https://stackoverflow.com/questions/2257441/random-string-generation-with-upper-case-letters-and-digits 
+            cursor.execute("INSERT INTO Conferences (Title, Start_Date, End_Date, Descrip) VALUES (%s, %s, %s, %s)",
+                           (x['name'], x['start_date'], x['end_date'], x['location'][:99]))
 connection.commit()
 connection.close()
