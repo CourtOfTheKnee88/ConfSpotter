@@ -1,3 +1,7 @@
+# Written by Courtney Jackson
+# Used AI assistance to help write in python, 
+# I wrote the logic of how I wanted it to function, 
+# and had AI help me with syntax and structure.
 import csv
 from datetime import datetime
 

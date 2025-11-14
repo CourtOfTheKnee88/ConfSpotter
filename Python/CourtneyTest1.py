@@ -5,10 +5,10 @@ import time
 
 connection = mysql.connector.connect(
     host="localhost",
-    port=3306,
-    user="root",
-    password="1298",
-    database="confspotter"
+    user="ConfSpotter",
+    password="chickenlittle",
+    database="confspotter",
+    autocommit=True,
 )
 cursor = connection.cursor()
 

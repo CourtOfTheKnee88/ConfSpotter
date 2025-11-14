@@ -34,7 +34,7 @@ To load Web Scraping Data:
 To clean the data:
 `python3 "Python/clean_conference_data.py"`
 
-To Convert to CSV and import into :
+To Convert to CSV and import into database:
 `python3 "Python/csv-conversion-script.py"`
 
 To View Data in Tables:
