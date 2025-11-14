@@ -32,9 +32,6 @@ CREATE TABLE Papers (
     DueDate DATETIME NOT NULL,
     CID INT NULL,
     PRIMARY KEY (PID),
-    CONSTRAINT chk_due_date CHECK (DueDate > NOW()),
-    -- Get add types of papers via web scrapping and then update the contraints
-    CONSTRAINT chk_typeofpaper CHECK (TypeOfPaper IN ('Full Paper', 'Short Paper', 'Poster', 'Demo')),
     CONSTRAINT chk_topic CHECK (Topic <> ''),
     KEY idx_papers_cid (CID),
     KEY idx_due_date (DueDate),
@@ -60,13 +57,6 @@ CREATE INDEX index_zip ON Location (Zip);
 
 -- Index for join between Conferences and Location (conferences.LID)
 CREATE INDEX idx_conferences_location ON Conferences (LID);
-
--- Index for join between Papers and Conferences (papers.CID)
-CREATE INDEX idx_papers_conference ON Papers (CID);
-
--- Indexes for filtering/sorting/searching papers
-CREATE INDEX idx_due_date ON Papers (DueDate);
-CREATE INDEX idx_topic ON Papers (Topic);
 
 -- Join Conferences with Location
 SELECT c.CID, c.Title, l.City, l.State, l.Country
