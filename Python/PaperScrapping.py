@@ -275,8 +275,14 @@ def clean_papers(input_file="papers.csv", output_file="papers_cleaned.csv"):
     df = df[(df["deadline_parsed"].dt.year >= 2020) &
             (df["deadline_parsed"].dt.year <= 2035)]
 
+    # Replace the original deadline column with properly formatted DATETIME
+    df["deadline"] = df["deadline_parsed"].dt.strftime("%Y-%m-%d %H:%M:%S")
+    
+    # Drop the temporary parsed column
+    df = df.drop(columns=["deadline_parsed"])
+
     # Sort
-    df = df.sort_values(["conference_id", "deadline_parsed", "type"])
+    df = df.sort_values(["conference_id", "deadline", "type"])
 
     # Save to new CSV
     df.to_csv(output_file, index=False)
@@ -323,3 +329,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    clean_papers()

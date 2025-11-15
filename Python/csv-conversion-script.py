@@ -25,6 +25,9 @@ with open('conferences_normalized.csv', newline='') as data1:
             # https://stackoverflow.com/questions/2257441/random-string-generation-with-upper-case-letters-and-digits 
             cursor.execute("INSERT INTO Conferences (Title, Start_Date, End_Date, Descrip, link) VALUES (%s, %s, %s, %s, %s)",
                            (x['name'], x['start_date'], x['end_date'], x['location'][:99], x['link']))
+
+# Commit conferences first so we can reference them
+connection.commit()
             
 # Papers
 with open('papers_cleaned.csv', newline='') as data2:
@@ -34,8 +37,13 @@ with open('papers_cleaned.csv', newline='') as data2:
             print(y)
             # This line was sourced from stackoverflow with modifications at:
             # https://stackoverflow.com/questions/2257441/random-string-generation-with-upper-case-letters-and-digits 
-            cursor.execute("INSERT INTO Conferences (TypeOfPaper, Topic, DueDate, CID) VALUES (%s, %s, %s, %s)",
-                           (y['type'][:50], y['conference_title'][:100], x['deadline'], x['conference_id']))
+            # Look up the CID based on conference title
+            cursor.execute("SELECT CID FROM Conferences WHERE Title = %s", (y['conference_title'],))
+            result = cursor.fetchone()
+            cid = result[0] if result else None
+            
+            cursor.execute("INSERT INTO Papers (TypeOfPaper, Topic, DueDate, CID) VALUES (%s, %s, %s, %s)",
+                           (y['type'][:50], y['conference_title'][:100], y['deadline'], cid))
             
 
 connection.commit()

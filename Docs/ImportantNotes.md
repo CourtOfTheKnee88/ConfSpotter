@@ -34,11 +34,11 @@ To load Web Scraping Data:
 To clean the data:
 `python3 "Python/clean_conference_data.py"`
 
+To scrap paper deadlines and clean them:
+`python3 "Python/PaperScrapping.py"`
+
 To Convert to CSV and import into database:
 `python3 "Python/csv-conversion-script.py"`
-
-To scrap paper deadlines:
-`python3 "Python/PaperScrapping.py"`
 
 To Run the Stored Procedures and Triggers:
 `mysql -u ConfSpotter -pchickenlittle confspotter < "SQL/Stored_Procedures and Triggers.sql"`
