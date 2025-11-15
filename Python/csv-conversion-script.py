@@ -27,7 +27,7 @@ with open('conferences_normalized.csv', newline='') as data1:
                            (x['name'], x['start_date'], x['end_date'], x['location'][:99], x['link']))
             
 # Papers
-with open('papers.csv', newline='') as data2:
+with open('papers_cleaned.csv', newline='') as data2:
     reader2 = csv.DictReader(data2)
     for y in reader2:
         if all(y.values()):
