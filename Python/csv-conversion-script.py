@@ -14,15 +14,29 @@ connection = mysql.connector.connect(       # Replace values with those that mat
 #facilitates interaction with the database.
 cursor = connection.cursor()
 
+# Conferences
 # Accesses csv file and adds all valid lines to database
-with open('conferences_normalized.csv', newline='') as data:
-    reader = csv.DictReader(data)
-    for x in reader:
+with open('conferences_normalized.csv', newline='') as data1:
+    reader1 = csv.DictReader(data1)
+    for x in reader1:
         if all(x.values()):
             print(x)
-            # This line was sourced from stackoverflow at:
+            # This line was sourced from stackoverflow with modifications at:
             # https://stackoverflow.com/questions/2257441/random-string-generation-with-upper-case-letters-and-digits 
             cursor.execute("INSERT INTO Conferences (Title, Start_Date, End_Date, Descrip, link) VALUES (%s, %s, %s, %s, %s)",
                            (x['name'], x['start_date'], x['end_date'], x['location'][:99], x['link']))
+            
+# Papers
+with open('papers.csv', newline='') as data2:
+    reader2 = csv.DictReader(data2)
+    for y in reader2:
+        if all(y.values()):
+            print(y)
+            # This line was sourced from stackoverflow with modifications at:
+            # https://stackoverflow.com/questions/2257441/random-string-generation-with-upper-case-letters-and-digits 
+            cursor.execute("INSERT INTO Conferences (TypeOfPaper, Topic, DueDate, CID) VALUES (%s, %s, %s, %s)",
+                           (y['type'][:50], y['conference_title'][:100], x['deadline'], x['conference_id']))
+            
+
 connection.commit()
 connection.close()
