@@ -78,7 +78,8 @@ def get_personal_conference_recommendations(user_id: int) -> List[Dict]:
             conn.close()
 
 # Sends an email to the user notifying them of upcoming paper deadlines
-# for conferences that match their interests.
+# for conferences that match their interests
+# Email sending to be added in PHASE III
 def notify_user_of_paper_deadlines(user_id: int, days_ahead: int = 30) -> List[Dict]:
     conn = None
     try:
