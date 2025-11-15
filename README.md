@@ -129,3 +129,15 @@ To scrap paper deadlines and clean them:
 
 To Convert to CSV and import into database:
 `python3 "Python/csv-conversion-script.py"`
+
+# Web Scraping Steps
+
+If the following packages aren't already installed, please install them:
+
+- requests
+- pandas
+- beautifulsoup4
+- re
+- urllib.parse
+
+Once all packages are installed to python, all you need to do is run the program.
