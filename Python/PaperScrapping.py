@@ -221,6 +221,69 @@ def extract_paper_deadlines(soup, url):
     
     return found_papers
 
+def clean_papers(input_file="papers.csv", output_file="papers_cleaned.csv"):
+    df = pd.read_csv(input_file)
+
+    # Standardize column names
+    df.columns = df.columns.str.strip().str.lower()
+
+    # Remove rows with no valid deadline
+    df = df[df["deadline"].notna()]
+
+    # Clean whitespace
+    text_cols = ["type", "deadline", "source_url", "context", 
+                 "conference_title"]
+    for col in text_cols:
+        if col in df:
+            df[col] = df[col].astype(str).str.strip()
+
+    # Remove duplicate rows
+    df = df.drop_duplicates(
+        subset=["conference_id", "type", "deadline", "source_url"]
+    )
+
+    # Normalize paper types
+    replacements = {
+        r"camera[-\s]?ready": "camera ready",
+        r"full\s*paper": "full paper",
+        r"short\s*paper": "short paper",
+        r"poster": "poster",
+        r"demo": "demo",
+        r"tutorial": "tutorial",
+        r"workshop": "workshop",
+        r"abstract": "abstract"
+    }
+
+    def normalize_type(t):
+        t = t.lower().strip()
+        for pattern, replacement in replacements.items():
+            if re.search(pattern, t):
+                return replacement
+        return t
+
+    df["type"] = df["type"].apply(normalize_type)
+
+    # Normalize deadline formats
+    df["deadline"] = df["deadline"].str.replace(r"[.,;]+$", "", regex=True)
+
+    # Convert to DateTime
+    df["deadline_parsed"] = pd.to_datetime(df["deadline"], errors="coerce")
+
+    # Removing invalid rows
+    df = df[df["deadline_parsed"].notna()]
+
+    df = df[(df["deadline_parsed"].dt.year >= 2020) &
+            (df["deadline_parsed"].dt.year <= 2035)]
+
+    # Sort
+    df = df.sort_values(["conference_id", "deadline_parsed", "type"])
+
+    # Save to new CSV
+    df.to_csv(output_file, index=False)
+    print(f"Cleaned CSV written to: {output_file}")
+    print(f"Rows before: {len(pd.read_csv(input_file))}, after cleaning: {len(df)}")
+
+
 def main():
     conferences = fetch_conferences()
     all_papers = []
