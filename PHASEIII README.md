@@ -48,8 +48,8 @@ DUE DECEMBER 5th 11:59 PM \
 Login - Courtney \
 Sign up - Seth \
 User Dashboard - Esther \
-Conference Information card/dashboard - Sam \
+Conference Information card/dashboard - Sam 
 
 Help Links:
 https://tailwindcss.com/docs/installation/using-vite \
-https://react.dev/ \
+https://react.dev/ 
