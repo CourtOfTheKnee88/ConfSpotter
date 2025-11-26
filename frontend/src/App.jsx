@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
-import Login from "./Login";
-import SignUp from "./SignUp";
-import Dashboard from "./Dashboard";
-import ConferenceInfo from "./ConferenceInfo";
+import Login from "./pages/Login";
+import SignUp from "./pages/SignUp";
+import Dashboard from "./pages/Dashboard";
+import ConferenceInfo from "./pages/ConferenceInfo";
 
 function App() {
   return (
