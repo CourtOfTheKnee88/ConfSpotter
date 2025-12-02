@@ -43,6 +43,7 @@ CREATE TABLE Papers (
 CREATE TABLE `user` (
     ID INT NOT NULL AUTO_INCREMENT,
     username VARCHAR(255),
+    password_hash VARCHAR(255) NOT NULL, 
     email VARCHAR(255) NULL,
     Phone CHAR(10) NULL,
     Interest_1 VARCHAR(255),
