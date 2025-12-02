@@ -5,6 +5,9 @@ import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
 import Dashboard from "./pages/Dashboard";
 import ConferenceInfo from "./pages/ConferenceInfo";
+import PaperPage from "./pages/Paper";
+
+
 
 function App() {
   return (
@@ -16,6 +19,7 @@ function App() {
             <Route path="/sign-up" element={<SignUp />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/conference-info" element={<ConferenceInfo />} />
+            <Route path="/papers" element={<PaperPage />} />
           </Routes>
         </main>
       </div>

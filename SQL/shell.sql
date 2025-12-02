@@ -84,3 +84,57 @@ CREATE INDEX index_location_country ON Location(Country);
 -- How full text works: https://dev.mysql.com/doc/refman/8.4/en/innodb-fulltext-index.html
 ALTER TABLE Conferences
 ADD FULLTEXT INDEX fullText_conference_title_desc (Title, Descrip);
+
+-- New INDEXES (Added in PHASE III):
+
+-- Index for upcoming papers by conference
+CREATE INDEX idx_papers_cid_duedate_topic
+ON Papers (CID, DueDate, Topic);
+
+-- Index for location-based filtering
+CREATE INDEX idx_location_city_state_lid
+ON Location (City, State, LID);
+
+-- Index for conference timeline
+CREATE INDEX idx_conference_dates_location
+ON Conferences (Start_Date, End_Date, LID);
+
+-- Index for descending order, e.g., newest first
+CREATE INDEX idx_conference_start_desc
+ON Conferences (Start_Date DESC);
+
+-- Index for large text columns
+CREATE INDEX idx_conference_title_prefix
+ON Conferences (Title(50));
+
+-- Index for papers + conferences join
+CREATE INDEX idx_papers_join_cover
+ON Papers (CID, Topic, DueDate);
+
+-- Index for multi-user interests
+CREATE INDEX idx_user_interests
+ON user (Interest_1, Interest_2, Interest_3);
+
+-- Index for lower-cased email, case sensitive
+CREATE INDEX idx_user_email_lower
+ON user ((LOWER(email)));
+
+-- Index for regional conferences
+CREATE INDEX idx_location_region_full
+ON Location (Country, State, City);
+
+-- Index for multi-column conferences search, title and start date
+CREATE INDEX idx_conference_title_start
+ON Conferences (Title, Start_Date);
+
+-- Index for location for conference lookups (a kind of reverse lookup)
+CREATE INDEX idx_conferences_lid_start
+ON Conferences (LID, Start_Date);
+
+-- Index for joining user and conferences via interests
+CREATE INDEX idx_conference_topic_title
+ON Papers (Topic, CID);
+
+-- Index for multi-table join for conferences title and location
+CREATE INDEX idx_conference_title_location
+ON Conferences (Title, LID);
