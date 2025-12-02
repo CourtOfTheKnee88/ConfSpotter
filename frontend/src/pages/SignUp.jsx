@@ -1,60 +1,8 @@
-// // Initial code written by Thirdmarch on Medium.com.
-// // Edits made by Seth Tedder to fit project needs.
-// // AI assistance used in modification.
-
-// import React, { useState } from "react";
-// import axios from 'axios';
-
-// const Signup = () => {
-//   const [email, setEmail] = useState("");
-//   const [password, setPassword] = useState("");
-//   const [confirmPassword, setConfirmPassword] = useState("");
-
-//   const handleSignup = (e) => {
-//     e.preventDefault();
-//     console.log("Signup email:", email, "password:", password);
-//   };
-
-//   return (
-//     <div>
-//       <h2>Signup</h2>
-//       <form onSubmit={handleSignup}>
-//         <input
-//           type="email"
-//           placeholder="Enter email"
-//           value={email}
-//           onChange={(e) => setEmail(e.target.value)}
-//           required
-//         />
-
-//         <input
-//           type="password"
-//           placeholder="Enter password"
-//           value={password}
-//           onChange={(e) => setPassword(e.target.value)}
-//           required
-//         />
-
-//         <input
-//           type="password"
-//           placeholder="Enter confirm password"
-//           value={confirmPassword}
-//           onChange={(e) => setConfirmPassword(e.target.value)}
-//           required
-//         />
-
-//         <button type="submit">Signup</button>
-//       </form>
-//     </div>
-//   );
-// };
-
-// export default Signup;
-
 import React, { useState } from "react";
 import axios from "axios";
 
 const Signup = () => {
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -93,39 +41,57 @@ const Signup = () => {
   };
 
   return (
-    <div>
-      <h2>Signup</h2>
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+      <div style={{ textAlign: 'center', width: '100%', maxWidth: 420, padding: 16 }}>
+        <h2>Signup</h2>
 
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      {success && <p style={{ color: "green" }}>{success}</p>}
+        {error && <p style={{ color: 'red' }}>{error}</p>}
+        {success && <p style={{ color: 'green' }}>{success}</p>}
 
-      <form onSubmit={handleSignup}>
-        <input
-          type="email"
-          placeholder="Enter email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
+        <form onSubmit={handleSignup} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, marginTop: 8 }}>
+          <input
+            type="username"
+            placeholder="Enter username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+            style={{ width: '100%', padding: 10, boxSizing: 'border-box' }}
+          />
+          <input
+            type="email"
+            placeholder="Enter email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            style={{ width: '100%', padding: 10, boxSizing: 'border-box' }}
+          />
 
-        <input
-          type="password"
-          placeholder="Enter password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
+          <input
+            type="password"
+            placeholder="Enter password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            style={{ width: '100%', padding: 10, boxSizing: 'border-box' }}
+          />
 
-        <input
-          type="password"
-          placeholder="Enter confirm password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          required
-        />
+          <input
+            type="password"
+            placeholder="Enter confirm password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+            style={{ width: '100%', padding: 10, boxSizing: 'border-box' }}
+          />
 
-        <button type="submit">Signup</button>
-      </form>
+          <button
+            type="submit"
+            style={{ color: 'white', backgroundColor: '#007bff', border: 'none', padding: '10px 16px', cursor: 'pointer', borderRadius: 4, width: '100%' }}
+          >
+            Signup
+          </button>
+        </form>
+      </div>
     </div>
   );
 };
