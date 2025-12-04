@@ -32,11 +32,11 @@ def insert_user(data):
     conn = get_connection()
     cursor = conn.cursor()
     query = """
-    INSERT INTO user (username, email, Phone, Interest_1, Interest_2, Interest_3)
-    VALUES (%s, %s, %s, %s, %s, %s)
+    INSERT INTO user (username, password_hash, email, Phone, Interest_1, Interest_2, Interest_3)
+    VALUES (%s, %s, %s, %s, %s, %s, %s)
     """
     cursor.execute(query, (
-        data["username"], data.get("email"), data.get("Phone"),
+        data["username"], data.get["password_hash"], data.get("email"), data.get("Phone"),
         data.get("Interest_1"), data.get("Interest_2"), data.get("Interest_3")
     ))
     conn.commit()
@@ -50,11 +50,11 @@ def update_user(user_id, data):
     cursor = conn.cursor()
     query = """
     UPDATE user
-    SET username=%s, email=%s, Phone=%s, Interest_1=%s, Interest_2=%s, Interest_3=%s
+    SET username=%s, password_hash=%s, email=%s, Phone=%s, Interest_1=%s, Interest_2=%s, Interest_3=%s
     WHERE ID=%s
     """
     cursor.execute(query, (
-        data["username"], data.get("email"), data.get("Phone"),
+        data.get["username"], data.get[password_hash], data.get("email"), data.get("Phone"),
         data.get("Interest_1"), data.get("Interest_2"), data.get("Interest_3"),
         user_id
     ))

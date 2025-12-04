@@ -21,10 +21,9 @@ const Signup = () => {
 
     try {
       const res = await axios.post("http://localhost:5001/api/users", {
-        // backend expects a `username` field; map the email to username
-        username: email,
-        email,
-        password,
+        username : e.target.username.value,
+        email : e.target.email.value,
+        password : e.target.password.value,
       });
 
       setSuccess("Account created successfully!");
