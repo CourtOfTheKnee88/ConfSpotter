@@ -471,6 +471,29 @@ def delete_user(user_id):
         return jsonify({"message": "User deleted successfully."}), 200
     except Error as e:
         return jsonify({"error": str(e)}), 500
+    
+#verify user login
+@app.post("/users/verify-login")
+def verify_login():
+    data = request.json
+    username = data.get("username")
+    password_hash = data.get("password_hash")
+
+    try:
+        conn = get_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM user WHERE username = %s AND password_hash = %s;", (username, password_hash))
+        user = cursor.fetchone()
+        cursor.close()
+        conn.close()
+
+        if user:
+            return jsonify({"message": "Login successful.", "user": user}), 200
+        else:
+            return jsonify({"message": "Invalid username or password."}), 401
+
+    except Error as e:
+        return jsonify({"error": str(e)}), 500
 
 # Entrypoint
 if __name__ == '__main__':
