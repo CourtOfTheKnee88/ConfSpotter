@@ -390,10 +390,18 @@ def get_user(user_id):
         return jsonify({"error": str(e)}), 500
 
 #insert user
-@app.post("/users")
+@app.post("/api/users")
 def create_user():
     data = request.json
     try:
+        # Validate required fields
+        if not data.get("username"):
+            return jsonify({"message": "Username is required"}), 400
+        if not data.get("email"):
+            return jsonify({"message": "Email is required"}), 400
+        if not data.get("password_hash"):
+            return jsonify({"message": "Password is required"}), 400
+        
         conn = get_connection()
         cursor = conn.cursor()
 
@@ -418,7 +426,11 @@ def create_user():
 
         return jsonify({"message": "User created successfully."}), 201
     except Error as e:
-        return jsonify({"error": str(e)}), 500
+        print(f"Database error: {str(e)}")
+        return jsonify({"message": f"Database error: {str(e)}"}), 500
+    except Exception as e:
+        print(f"Unexpected error: {str(e)}")
+        return jsonify({"message": f"Unexpected error: {str(e)}"}), 500
 
 #update user
 @app.put("/users/<int:user_id>")
