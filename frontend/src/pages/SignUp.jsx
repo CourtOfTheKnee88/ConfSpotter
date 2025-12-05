@@ -8,6 +8,7 @@ const Signup = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleSignup = async (e) => {
     e.preventDefault();
@@ -19,14 +20,16 @@ const Signup = () => {
       return;
     }
 
+    setLoading(true);
     try {
       const res = await axios.post("http://localhost:5001/api/users", {
-        username : e.target.username.value,
-        email : e.target.email.value,
-        password : e.target.password.value,
+        username: username,
+        email: email,
+        password: password,
       });
 
       setSuccess("Account created successfully!");
+      setUsername("");
       setEmail("");
       setPassword("");
       setConfirmPassword("");
@@ -36,6 +39,8 @@ const Signup = () => {
       } else {
         setError("Server error — please try again later.");
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -85,9 +90,10 @@ const Signup = () => {
 
           <button
             type="submit"
-            style={{ color: 'white', backgroundColor: '#007bff', border: 'none', padding: '10px 16px', cursor: 'pointer', borderRadius: 4, width: '100%' }}
+            disabled={loading}
+            style={{ color: 'white', backgroundColor: loading ? '#ccc' : '#007bff', border: 'none', padding: '10px 16px', cursor: loading ? 'not-allowed' : 'pointer', borderRadius: 4, width: '100%' }}
           >
-            Signup
+            {loading ? "Creating account..." : "Signup"}
           </button>
         </form>
       </div>
