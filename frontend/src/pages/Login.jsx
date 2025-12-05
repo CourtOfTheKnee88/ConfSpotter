@@ -18,10 +18,29 @@ const Login = () => {
     navigate("/sign-up");
   }
 
-  function handleLogin(username, password) {
-    // call the api to verify login credentials
-    // if successful, navigate to dashboard
-    navigate("/dashboard");
+  async function handleLogin(e) {
+    e.preventDefault();
+    try {
+      const response = await fetch("/api/users", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, password }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Success:", data.message);
+        setUsername("");
+        setPassword("");
+        goToDashboard();
+      } else {
+        console.error("Error:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Network error:", error);
+    }
   }
 
   return (
@@ -49,20 +68,23 @@ const Login = () => {
       <div className="bg-white rounded-xl py-10 px-20 shadow-lg flex flex-col gap-10">
         <h1 className="font-bold text-4xl text-center">Confrence Spotter</h1>
 
-        <form className="flex flex-col gap-6">
+        <form onSubmit={handleLogin} className="flex flex-col gap-6">
           <input
             type="email"
             placeholder="Email"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
             className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
           <input
             type="password"
             placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
             className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
           <button
             type="submit"
-            onPress={handleLogin(username, password)}
             className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
           >
             Login

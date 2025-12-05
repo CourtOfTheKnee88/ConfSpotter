@@ -62,19 +62,27 @@ def parse_date(val):
     raise ValueError(f"Unsupported date value: {val}")
 
 # Routes
-@app.route('/conferences', methods=['GET'])
-def get_conferences():
-    conferences = Conference.query.all()
-    return jsonify([c.to_dict() for c in conferences]), 200
+@app.get('/api/conferences')
+def get_all_conferences():
+    try:
+        conn = get_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM Conferences;")
+        conferences = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        return jsonify(conferences), 200
+    except Error as e:
+        return jsonify({"error": str(e)}), 500
 
-@app.route('/conferences/<int:conf_id>', methods=['GET'])
+@app.route('/api/conferences/<int:conf_id>', methods=['GET'])
 def get_conference(conf_id):
     conference = Conference.query.get(conf_id)
     if not conference:
         return jsonify({"error": "Conference not found"}), 404
     return jsonify(conference.to_dict()), 200
 
-@app.route('/conferences', methods=['POST'])
+@app.route('/api/conferences', methods=['POST'])
 def create_conference():
     data = request.json or {}
 
@@ -101,7 +109,7 @@ def create_conference():
 
     return jsonify(new_conf.to_dict()), 201
 
-@app.route('/conferences/<int:conf_id>', methods=['PUT'])
+@app.route('/api/conferences/<int:conf_id>', methods=['PUT'])
 def update_conference(conf_id):
     conference = Conference.query.get(conf_id)
     if not conference:
@@ -129,7 +137,7 @@ def update_conference(conf_id):
 
     return jsonify(conference.to_dict()), 200
 
-@app.route('/conferences/<int:conf_id>', methods=['DELETE'])
+@app.route('/api/conferences/<int:conf_id>', methods=['DELETE'])
 def delete_conference(conf_id):
     conference = Conference.query.get(conf_id)
     if not conference:
@@ -247,12 +255,12 @@ def test_database():
 # PAPERS API:
 
 # Get all papers
-@app.get("/papers")
+@app.get("/api/papers")
 def get_papers():
     try:
         conn = get_connection()
         cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM Paper;")
+        cursor.execute("SELECT * FROM Papers;")
         papers = cursor.fetchall()
         cursor.close()
         conn.close()
@@ -262,7 +270,7 @@ def get_papers():
 
 
 # Get single paper by ID
-@app.get("/papers/<int:paper_id>")
+@app.get("/api/papers/<int:paper_id>")
 def get_paper(paper_id):
     try:
         conn = get_connection()
@@ -277,7 +285,7 @@ def get_paper(paper_id):
 
 
 # Create a new paper
-@app.post("/papers")
+@app.post("/api/papers")
 def create_paper():
     data = request.json
     try:
@@ -306,7 +314,7 @@ def create_paper():
 
 
 # Update paper
-@app.put("/papers/<int:paper_id>")
+@app.put("/api/papers/<int:paper_id>")
 def update_paper(paper_id):
     data = request.json
     try:
@@ -341,7 +349,7 @@ def update_paper(paper_id):
 
 
 # Delete a paper
-@app.delete("/papers/<int:paper_id>")
+@app.delete("/api/papers/<int:paper_id>")
 def delete_paper(paper_id):
     try:
         conn = get_connection()
