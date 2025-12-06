@@ -1,9 +1,11 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 import sys
 import os
+import re
+import json
 from dotenv import load_dotenv
 from Python.connection import get_connection
 import mysql.connector
@@ -16,11 +18,7 @@ load_dotenv()
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///conferences.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-# Initialize SQLAlchemy
 db = SQLAlchemy(app)
-
-# Database Model
 class Conference(db.Model):
     __tablename__ = 'conferences'
 
@@ -228,6 +226,76 @@ def run_tests():
 
 CORS(app, origins=["http://localhost:5173"])
 
+def validate_password_strength(password):
+    """Validate password meets security requirements"""
+    if len(password) < 8:
+        return False, "Password must be at least 8 characters long"
+    if not re.search(r'[A-Z]', password):
+        return False, "Password must contain at least one uppercase letter"
+    if not re.search(r'[a-z]', password):
+        return False, "Password must contain at least one lowercase letter"
+    if not re.search(r'[0-9]', password):
+        return False, "Password must contain at least one number"
+    return True, "Password is valid"
+
+def log_audit(user_id, username, operation_type, old_values=None, new_values=None):
+    """Log operations to AuditLog table"""
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO AuditLog (user_id, username, operation_type, old_values, new_values)
+            VALUES (%s, %s, %s, %s, %s)
+        """, (
+            user_id,
+            username,
+            operation_type,
+            json.dumps(old_values) if old_values else None,
+            json.dumps(new_values) if new_values else None
+        ))
+        conn.commit()
+        cursor.close()
+        conn.close()
+    except Exception as e:
+        print(f"Audit logging error: {str(e)}")
+
+def check_rate_limit(username):
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+  
+        fifteen_mins_ago = datetime.now() - timedelta(minutes=15)
+        cursor.execute("""
+            SELECT COUNT(*) FROM LoginAttempts 
+            WHERE username = %s 
+            AND attempt_time > %s 
+            AND success = FALSE
+        """, (username, fifteen_mins_ago))
+        
+        failed_attempts = cursor.fetchone()[0]
+        cursor.close()
+        conn.close()
+        
+        return failed_attempts >= 5
+    except Exception as e:
+        print(f"Rate limit check error: {str(e)}")
+        return False
+
+def log_login_attempt(username, success):
+    """Log login attempt to LoginAttempts table"""
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO LoginAttempts (username, success)
+            VALUES (%s, %s)
+        """, (username, success))
+        conn.commit()
+        cursor.close()
+        conn.close()
+    except Exception as e:
+        print(f"Login attempt logging error: {str(e)}")
+
 @app.route('/', methods=['GET'])
 def home():
     return jsonify({"message": "ConfSpotter API is running!"})
@@ -403,7 +471,6 @@ def get_user(user_id):
 def create_user():
     data = request.json
     try:
-        # Validate required fields
         if not data.get("username"):
             return jsonify({"message": "Username is required"}), 400
         if not data.get("email"):
@@ -411,8 +478,24 @@ def create_user():
         if not data.get("password_hash"):
             return jsonify({"message": "Password is required"}), 400
         
+        is_valid, message = validate_password_strength(data.get("password_hash"))
+        if not is_valid:
+            return jsonify({"message": message}), 400
+        
         conn = get_connection()
         cursor = conn.cursor()
+
+        cursor.execute("""
+            CALL CheckUserExists(%s, %s, @exists_flag, @existing_user_id);
+        """, (data.get("email"), data.get("Phone")))
+
+        cursor.execute("SELECT @exists_flag, @existing_user_id")
+        exists_flag, existing_user_id = cursor.fetchone()
+        
+        if exists_flag == 1:
+            cursor.close()
+            conn.close()
+            return jsonify({"message": "User with this email or username phone number already exists"}), 409
 
         sql = """
             INSERT INTO user (username, password_hash, email, Phone, Interest_1, Interest_2, Interest_3)
@@ -430,6 +513,18 @@ def create_user():
         ))
 
         conn.commit()
+        
+        log_audit(
+            user_id=None,
+            username=data["username"],
+            operation_type="CREATE_USER",
+            new_values={
+                "username": data["username"],
+                "email": data.get("email"),
+                "phone": data.get("Phone")
+            }
+        )
+        
         cursor.close()
         conn.close()
 
@@ -447,7 +542,22 @@ def update_user(user_id):
     data = request.json
     try:
         conn = get_connection()
-        cursor = conn.cursor()
+        cursor = conn.cursor(dictionary=True)
+        
+        cursor.execute("SELECT * FROM user WHERE ID = %s", (user_id,))
+        old_user = cursor.fetchone()
+        
+        if not old_user:
+            cursor.close()
+            conn.close()
+            return jsonify({"error": "User not found"}), 404
+        
+        if data.get("password_hash"):
+            is_valid, message = validate_password_strength(data.get("password_hash"))
+            if not is_valid:
+                cursor.close()
+                conn.close()
+                return jsonify({"message": message}), 400
 
         sql = """
             UPDATE user
@@ -473,6 +583,23 @@ def update_user(user_id):
         ))
 
         conn.commit()
+        
+        log_audit(
+            user_id=user_id,
+            username=old_user["username"],
+            operation_type="UPDATE_USER",
+            old_values={
+                "username": old_user["username"],
+                "email": old_user["email"],
+                "phone": old_user["Phone"]
+            },
+            new_values={
+                "username": data["username"],
+                "email": data.get("email"),
+                "phone": data.get("Phone")
+            }
+        )
+        
         cursor.close()
         conn.close()
 
@@ -486,9 +613,30 @@ def update_user(user_id):
 def delete_user(user_id):
     try:
         conn = get_connection()
-        cursor = conn.cursor()
+        cursor = conn.cursor(dictionary=True)
+        
+        cursor.execute("SELECT * FROM user WHERE ID = %s;", (user_id,))
+        user_data = cursor.fetchone()
+        
+        if not user_data:
+            cursor.close()
+            conn.close()
+            return jsonify({"error": "User not found"}), 404
+        
         cursor.execute("DELETE FROM user WHERE ID = %s;", (user_id,))
         conn.commit()
+        
+        log_audit(
+            user_id=user_id,
+            username=user_data["username"],
+            operation_type="DELETE_USER",
+            old_values={
+                "username": user_data["username"],
+                "email": user_data["email"],
+                "phone": user_data["Phone"]
+            }
+        )
+        
         cursor.close()
         conn.close()
         return jsonify({"message": "User deleted successfully."}), 200
@@ -503,17 +651,33 @@ def verify_login():
     password_hash = data.get("password_hash")
 
     try:
+        if check_rate_limit(login_input):
+            return jsonify({"message": "Too many failed login attempts. Please try again in 15 minutes."}), 429
+        
         conn = get_connection()
         cursor = conn.cursor(dictionary=True)
-        # Check if login_input matches either username or email
         cursor.execute("SELECT * FROM user WHERE (username = %s OR email = %s) AND password_hash = %s;", (login_input, login_input, password_hash))
         user = cursor.fetchone()
         cursor.close()
         conn.close()
 
         if user:
+            log_login_attempt(login_input, True)
+            log_audit(
+                user_id=user["ID"],
+                username=user["username"],
+                operation_type="LOGIN_SUCCESS"
+            )
+            
             return jsonify({"message": "Login successful.", "user": user}), 200
         else:
+            log_login_attempt(login_input, False)
+            log_audit(
+                user_id=None,
+                username=login_input,
+                operation_type="LOGIN_FAILED"
+            )
+            
             return jsonify({"message": "Invalid username/email or password."}), 401
 
     except Error as e:
