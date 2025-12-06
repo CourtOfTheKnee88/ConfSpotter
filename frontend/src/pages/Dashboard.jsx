@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
+import ConferenceInfo from "./Fickett_ConferenceInfo";
 
 const Dashboard = () => {
   const [conferences, setConferences] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedConference, setSelectedConference] = useState(null);
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -25,6 +27,23 @@ const Dashboard = () => {
         setLoading(false);
       });
   }, []);
+
+  // Load conference details
+  const loadConferenceDetails = async (id) => {
+    try {
+      const res = await fetch(`http://localhost:5001/api/conferences/${id}`);
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      setSelectedConference(data);
+    } catch {
+      setError("Unable to load conference details.");
+    }
+  };
+
+  // Close detail modal
+  const closeDetails = () => {
+    setSelectedConference(null);
+  };
 
   // Toggle starred conferences (client-side only)
   const toggleFavorite = (CID) => {
@@ -124,7 +143,11 @@ const Dashboard = () => {
           ) : (
             <div className="space-y-3">
               {starredConfs.map((conf) => (
-                <div key={conf.CID} className="bg-white p-4 rounded shadow">
+                <div
+                  key={conf.CID}
+                  className="bg-white p-4 rounded shadow cursor-pointer hover:bg-gray-50 transition"
+                  onClick={() => loadConferenceDetails(conf.CID)}
+                >
                   <h3 className="font-semibold">{conf.Title}</h3>
                   <p className="text-sm text-gray-600">
                     Starts: {new Date(conf.Start_Date).toLocaleDateString()}
@@ -144,7 +167,11 @@ const Dashboard = () => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               {upcomingConfs.map((conf) => (
-                <div key={conf.CID} className="bg-white p-4 rounded shadow">
+                <div
+                  key={conf.CID}
+                  className="bg-white p-4 rounded shadow cursor-pointer hover:bg-gray-50 transition"
+                  onClick={() => loadConferenceDetails(conf.CID)}
+                >
                   <h3 className="font-semibold">{conf.Title}</h3>
                   <p className="text-sm">
                     Starts: {new Date(conf.Start_Date).toLocaleDateString()}
@@ -163,9 +190,12 @@ const Dashboard = () => {
             {filteredConferences.map((conf) => (
               <div
                 key={conf.CID}
-                className="bg-white p-4 rounded shadow flex justify-between items-center"
+                className="bg-white p-4 rounded shadow flex justify-between items-center hover:bg-gray-50 transition"
               >
-                <div>
+                <div
+                  className="flex-1 cursor-pointer"
+                  onClick={() => loadConferenceDetails(conf.CID)}
+                >
                   <h3 className="font-semibold">{conf.Title}</h3>
                   <p className="text-sm text-gray-600">
                     Starts: {new Date(conf.Start_Date).toLocaleDateString()}
@@ -173,7 +203,10 @@ const Dashboard = () => {
                 </div>
 
                 <button
-                  onClick={() => toggleFavorite(conf.CID)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleFavorite(conf.CID);
+                  }}
                   className={`px-4 py-2 rounded text-sm font-medium ${
                     favorites.includes(conf.CID)
                       ? "bg-yellow-400 text-black"
@@ -186,6 +219,16 @@ const Dashboard = () => {
             ))}
           </div>
         </section>
+
+        {/* Conference Detail Modal */}
+        {selectedConference && (
+          <div>
+            <ConferenceInfo
+              selectedConference={selectedConference}
+              closeDetails={closeDetails}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

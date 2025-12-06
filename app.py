@@ -70,7 +70,7 @@ def parse_date(val):
     raise ValueError(f"Unsupported date value: {val}")
 
 # Routes
-@app.route('/conferences', methods=['GET'])
+@app.route('/api/conferences', methods=['GET'])
 def get_conferences():
     try:
         conn = get_connection()
@@ -98,10 +98,45 @@ def get_conferences():
 
 @app.route('/api/conferences/<int:conf_id>', methods=['GET'])
 def get_conference(conf_id):
-    conference = Conference.query.get(conf_id)
-    if not conference:
-        return jsonify({"error": "Conference not found"}), 404
-    return jsonify(conference.to_dict()), 200
+    try:
+        print(f"[DEBUG] Fetching conference with CID={conf_id}")
+        conn = get_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        query = """
+            SELECT
+                c.CID as id,
+                c.Title as name,
+                c.Start_Date as start_date,
+                c.End_Date as end_date,
+                c.Descrip as description,
+                c.link as url,
+                CONCAT_WS(', ', l.City, l.State, l.Country) as location
+            FROM Conferences c
+            LEFT JOIN Location l ON c.LID = l.LID
+            WHERE c.CID = %s
+        """
+        
+        cursor.execute(query, (conf_id,))
+        conference = cursor.fetchone()
+
+        print(f"[DEBUG] Query executed for CID={conf_id}, Result: {conference}")
+
+        cursor.close()
+        conn.close()
+
+        if not conference:
+            print(f"[DEBUG] Conference not found for CID={conf_id}")
+            return jsonify({"error": "Conference not found"}), 404
+
+        return jsonify(conference), 200
+
+    except Error as e:
+        print(f"[ERROR] Database error: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+    except Exception as e:
+        print(f"[ERROR] Unexpected error: {str(e)}")
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/api/conferences', methods=['POST'])
 def create_conference():
