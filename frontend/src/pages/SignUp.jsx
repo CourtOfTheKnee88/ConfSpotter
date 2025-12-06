@@ -26,10 +26,17 @@ const Signup = () => {
 
     setLoading(true);
     try {
+      // sanitize phone to digits only (DB expects digits)
+      const phoneDigits = phone ? phone.replace(/\D/g, "") : null;
+
       const res = await axios.post("http://localhost:5000/api/users", {
         username: username,
         email: email,
         password_hash: password,
+        Phone: phoneDigits,
+        Interest_1: interest1 ? interest1.trim() : null,
+        Interest_2: interest2 ? interest2.trim() : null,
+        Interest_3: interest3 ? interest3.trim() : null,
       });
 
       setSuccess("Account created successfully!");
@@ -80,7 +87,7 @@ const Signup = () => {
           <input
             type="phone"
             placeholder="Enter phone number (optional)"
-            value={email}
+            value={phone}
             onChange={(e) => setPhone(e.target.value)}
             style={{ width: '100%', padding: 10, boxSizing: 'border-box' }}
           />
