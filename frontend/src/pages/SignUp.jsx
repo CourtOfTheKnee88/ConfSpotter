@@ -4,8 +4,12 @@ import axios from "axios";
 const Signup = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [interest1, setInterest1] = useState("");
+  const [interest2, setInterest2] = useState("");
+  const [interest3, setInterest3] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
@@ -31,8 +35,12 @@ const Signup = () => {
       setSuccess("Account created successfully!");
       setUsername("");
       setEmail("");
+      setPhone("");
       setPassword("");
       setConfirmPassword("");
+      setInterest1("");
+      setInterest2("");
+      setInterest3("");
     } catch (err) {
       if (err.response?.data?.message) {
         setError(err.response.data.message);
@@ -69,7 +77,13 @@ const Signup = () => {
             required
             style={{ width: '100%', padding: 10, boxSizing: 'border-box' }}
           />
-
+          <input
+            type="phone"
+            placeholder="Enter phone number (optional)"
+            value={email}
+            onChange={(e) => setPhone(e.target.value)}
+            style={{ width: '100%', padding: 10, boxSizing: 'border-box' }}
+          />
           <input
             type="password"
             placeholder="Enter password"
@@ -85,6 +99,29 @@ const Signup = () => {
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
+            style={{ width: '100%', padding: 10, boxSizing: 'border-box' }}
+          />
+
+          <input
+            type="interest 1"
+            placeholder="Enter interest 1"
+            value={interest1}
+            onChange={(e) => setInterest1(e.target.value)}
+            required
+            style={{ width: '100%', padding: 10, boxSizing: 'border-box' }}
+          />
+          <input
+            type="interest 2"
+            placeholder="Enter interest 2 (optional)"
+            value={interest2}
+            onChange={(e) => setInterest2(e.target.value)}
+            style={{ width: '100%', padding: 10, boxSizing: 'border-box' }}
+          />
+          <input
+            type="interest 3"
+            placeholder="Enter interest 3 (optional)"
+            value={interest3}
+            onChange={(e) => setInterest3(e.target.value)}
             style={{ width: '100%', padding: 10, boxSizing: 'border-box' }}
           />
 

@@ -401,6 +401,8 @@ def create_user():
             return jsonify({"message": "Email is required"}), 400
         if not data.get("password_hash"):
             return jsonify({"message": "Password is required"}), 400
+        if not data.get("Interest_1") or not data.get("Interest_2") or not data.get("Interest_3"):
+            return jsonify({"message": "At least one Interest is required"}), 400
         
         conn = get_connection()
         cursor = conn.cursor()
@@ -524,8 +526,8 @@ DB_PASSWORD = os.environ.get("DB_PASSWORD")
 DB_HOST = os.environ.get("DB_HOST", "localhost")
 DB_NAME = os.environ.get("DB_NAME")
 
+#Creates a backup of the database and saves it to the backups directory
 @app.route("/api/create-backup", methods=["POST"])
-
 def create_backup_api():
     os.makedirs(BACKUP_DIR, exist_ok=True)
     conn = get_connection()
@@ -549,6 +551,7 @@ def create_backup_api():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
+#Restores the database from a specified backup file in the backups directory
 @app.route("/api/restore", methods=["POST"])
 def restore_backup_api():
     os.makedirs(BACKUP_DIR, exist_ok=True)
@@ -576,11 +579,12 @@ def restore_backup_api():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
     
+#Runs the backup function on a schedule
 def scheduled_backup():
     with app.test_request_context():
         create_backup_api()
 
-
+#Runs the health check function on a schedule
 def scheduled_health_check():
     try:
         conn = mysql.connector.connect(
