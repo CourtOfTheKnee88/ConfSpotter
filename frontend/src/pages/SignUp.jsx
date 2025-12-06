@@ -1,12 +1,17 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const Signup = () => {
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [interest1, setInterest1] = useState("");
+  const [interest2, setInterest2] = useState("");
+  const [interest3, setInterest3] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
@@ -27,34 +32,34 @@ const Signup = () => {
 
     setLoading(true);
     try {
-      const response = await fetch("http://localhost:5001/api/users", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          username: username,
-          email: email,
-          password_hash: password,
-        }),
+      // sanitize phone to digits only (DB expects digits)
+      const phoneDigits = phone ? phone.replace(/\D/g, "") : null;
+
+      const res = await axios.post("http://localhost:5000/api/users", {
+        username: username,
+        email: email,
+        password_hash: password,
+        Phone: phoneDigits,
+        Interest_1: interest1 ? interest1.trim() : null,
+        Interest_2: interest2 ? interest2.trim() : null,
+        Interest_3: interest3 ? interest3.trim() : null,
       });
 
-      const data = await response.json();
-
-      if (response.ok) {
-        setSuccess("Account created successfully! Redirecting to login...");
-        setUsername("");
-        setEmail("");
-        setPassword("");
-        setConfirmPassword("");
-        setTimeout(() => {
-          goToLogin();
-        }, 2000);
-      } else {
-        setError(data.message || "Failed to create account");
-      }
+      setSuccess("Account created successfully!");
+      setUsername("");
+      setEmail("");
+      setPhone("");
+      setPassword("");
+      setConfirmPassword("");
+      setInterest1("");
+      setInterest2("");
+      setInterest3("");
     } catch (err) {
-      setError("Network error — please try again later.");
+      if (err.response?.data?.message) {
+        setError(err.response.data.message);
+      } else {
+        setError("Failed to create account");
+      }
     } finally {
       setLoading(false);
     }
@@ -86,6 +91,13 @@ const Signup = () => {
             className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
           <input
+            type="text"
+            placeholder="Enter phone number (optional)"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+          <input
             type="password"
             placeholder="Password"
             value={password}
@@ -101,6 +113,30 @@ const Signup = () => {
             required
             className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
+
+          <input
+            type="text"
+            placeholder="Enter interest 1"
+            value={interest1}
+            onChange={(e) => setInterest1(e.target.value)}
+            required
+            className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+          <input
+            type="text"
+            placeholder="Enter interest 2 (optional)"
+            value={interest2}
+            onChange={(e) => setInterest2(e.target.value)}
+            className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+          <input
+            type="text"
+            placeholder="Enter interest 3 (optional)"
+            value={interest3}
+            onChange={(e) => setInterest3(e.target.value)}
+            className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+
           <button
             type="submit"
             disabled={loading}
