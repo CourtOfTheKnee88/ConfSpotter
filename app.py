@@ -439,7 +439,7 @@ def delete_paper(paper_id):
 #Models used: ChatGPT-5, VS copilot
 
 #get all users
-@app.get("/users")
+@app.get("/api/users")
 def get_all_users():    
     try:
         conn = get_connection()
@@ -453,7 +453,7 @@ def get_all_users():
         return jsonify({"error": str(e)}), 500
 
 #get user by ID
-@app.get("/users/<int:user_id>")
+@app.get("/api/users/<int:user_id>")
 def get_user(user_id):
     try:
         conn = get_connection()
@@ -537,7 +537,7 @@ def create_user():
         return jsonify({"message": f"Unexpected error: {str(e)}"}), 500
 
 #update user
-@app.put("/users/<int:user_id>")
+@app.put("/api/users/<int:user_id>")
 def update_user(user_id):
     data = request.json
     try:
@@ -609,7 +609,7 @@ def update_user(user_id):
         return jsonify({"error": str(e)}), 500
 
 #delete user
-@app.delete("/users/<int:user_id>")
+@app.delete("/api/users/<int:user_id>")
 def delete_user(user_id):
     try:
         conn = get_connection()
@@ -644,7 +644,7 @@ def delete_user(user_id):
         return jsonify({"error": str(e)}), 500
     
 #verify user login
-@app.post("/users/verify-login")
+@app.post("/api/users/verify-login")
 def verify_login():
     data = request.json
     login_input = data.get("login")  # Can be username or email

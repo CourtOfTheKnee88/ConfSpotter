@@ -29,16 +29,19 @@ const Login = () => {
     }
 
     try {
-      const response = await fetch("http://localhost:5001/users/verify-login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          login,
-          password_hash: password,
-        }),
-      });
+      const response = await fetch(
+        "http://localhost:5001/api/users/verify-login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            login,
+            password_hash: password,
+          }),
+        }
+      );
 
       const data = await response.json();
 

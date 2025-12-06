@@ -1,19 +1,19 @@
 type,deadline,source_url,context,conference_title,conference_id
-submission,2026-01-23 00:00:00,https://iui.acm.org,"Camera-ready submission: January 23, 2026",IUIACM Conference on Intelligent User Interfaces,25
-submission,2026-01-23 00:00:00,https://iui.acm.org/2026/call-for-papers/,"Camera-ready submission: January 23, 2026",IUIACM Conference on Intelligent User Interfaces,25
-submission,2026-01-23 00:00:00,https://iui.hosting.acm.org/2026/call-for-papers/,"Camera-ready submission: January 23, 2026",IUIACM Conference on Intelligent User Interfaces,25
-submission,2026-01-23 00:00:00,https://iui.acm.org/2026/call-for-papers,"Camera-ready submission: January 23, 2026",IUIACM Conference on Intelligent User Interfaces,25
-submission,2026-01-23 00:00:00,https://iui.acm.org/2026/call,"Camera-ready submission: January 23, 2026",IUIACM Conference on Intelligent User Interfaces,25
-submission,2026-02-06 00:00:00,https://iui.acm.org,"Camera-ready submission: February 06, 2026",IUIACM Conference on Intelligent User Interfaces,25
-abstract,2025-07-31 00:00:00,https://tei.acm.org/2026/participate/papers/,"Abstract Deadline July 31, 2025, AoE","TEIACM International Conference on Tangible, Embedded and Embodied Interaction",26
+submission,2026-01-23 00:00:00,https://iui.acm.org,"Camera-ready submission: January 23, 2026",IUIACM Conference on Intelligent User Interfaces,4
+submission,2026-01-23 00:00:00,https://iui.acm.org/2026/call-for-papers/,"Camera-ready submission: January 23, 2026",IUIACM Conference on Intelligent User Interfaces,4
+submission,2026-01-23 00:00:00,https://iui.hosting.acm.org/2026/call-for-papers/,"Camera-ready submission: January 23, 2026",IUIACM Conference on Intelligent User Interfaces,4
+submission,2026-01-23 00:00:00,https://iui.acm.org/2026/call-for-papers,"Camera-ready submission: January 23, 2026",IUIACM Conference on Intelligent User Interfaces,4
+submission,2026-01-23 00:00:00,https://iui.acm.org/2026/call,"Camera-ready submission: January 23, 2026",IUIACM Conference on Intelligent User Interfaces,4
+submission,2026-02-06 00:00:00,https://iui.acm.org,"Camera-ready submission: February 06, 2026",IUIACM Conference on Intelligent User Interfaces,4
+abstract,2025-07-31 00:00:00,https://tei.acm.org/2026/participate/papers/,"Abstract Deadline July 31, 2025, AoE","TEIACM International Conference on Tangible, Embedded and Embodied Interaction",5
 abstract,2025-07-31 00:00:00,https://tei.acm.org/2026/participate/papers/,"Abstract Deadline
 
-July 31, 2025, AoE","TEIACM International Conference on Tangible, Embedded and Embodied Interaction",26
-abstract,2025-07-31 00:00:00,https://tei.acm.org/2026/participate/papers,"Abstract Deadline July 31, 2025, AoE","TEIACM International Conference on Tangible, Embedded and Embodied Interaction",26
+July 31, 2025, AoE","TEIACM International Conference on Tangible, Embedded and Embodied Interaction",5
+abstract,2025-07-31 00:00:00,https://tei.acm.org/2026/participate/papers,"Abstract Deadline July 31, 2025, AoE","TEIACM International Conference on Tangible, Embedded and Embodied Interaction",5
 abstract,2025-07-31 00:00:00,https://tei.acm.org/2026/participate/papers,"Abstract Deadline
 
-July 31, 2025, AoE","TEIACM International Conference on Tangible, Embedded and Embodied Interaction",26
-camera ready,2025-11-10 00:00:00,https://tei.acm.org/2026/participate/papers/,"Camera-Ready Deadline on PCS (Anonymized) November 10, 2025","TEIACM International Conference on Tangible, Embedded and Embodied Interaction",26
-camera ready,2025-11-10 00:00:00,https://tei.acm.org/2026/participate/papers,"Camera-Ready Deadline on PCS (Anonymized) November 10, 2025","TEIACM International Conference on Tangible, Embedded and Embodied Interaction",26
+July 31, 2025, AoE","TEIACM International Conference on Tangible, Embedded and Embodied Interaction",5
+camera ready,2025-11-10 00:00:00,https://tei.acm.org/2026/participate/papers/,"Camera-Ready Deadline on PCS (Anonymized) November 10, 2025","TEIACM International Conference on Tangible, Embedded and Embodied Interaction",5
+camera ready,2025-11-10 00:00:00,https://tei.acm.org/2026/participate/papers,"Camera-Ready Deadline on PCS (Anonymized) November 10, 2025","TEIACM International Conference on Tangible, Embedded and Embodied Interaction",5
 deadline,2025-07-25 00:00:00,https://www.ubicomp.org/ubicomp-iswc-2025/iswc-notes-and-briefs/,"Camera-Ready Deadline:
-July 25, 2025",UbiComp / ISWCACM international Joint Conference on Pervasive and Ubiquitous Computing,27
+July 25, 2025",UbiComp / ISWCACM international Joint Conference on Pervasive and Ubiquitous Computing,6

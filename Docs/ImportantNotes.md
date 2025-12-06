@@ -68,4 +68,4 @@ INSERT INTO Location (Street_Address, City, State, Zip, Country)
 VALUES ('123 Main St', 'Boston', 'MA', '!@#$%', 'USA');
 
 To drop all the tables:
-`mysql -u ConfSpotter -pchickenlittle -e "USE confspotter; SET FOREIGN_KEY_CHECKS = 0; DROP TABLE IF EXISTS Papers; DROP TABLE IF EXISTS Conferences; DROP TABLE IF EXISTS user; DROP TABLE IF EXISTS Location; SET FOREIGN_KEY_CHECKS = 1;"`
+`mysql -u ConfSpotter -pchickenlittle -e "USE confspotter; SET FOREIGN_KEY_CHECKS = 0; DROP TABLE IF EXISTS Papers; DROP TABLE IF EXISTS Conferences; DROP TABLE IF EXISTS user; DROP TABLE IF EXISTS Location; DROP TABLE IF EXISTS AuditLog; DROP TABLE IF EXISTS LoginAttempts; SET FOREIGN_KEY_CHECKS = 1;"`
