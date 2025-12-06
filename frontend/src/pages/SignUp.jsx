@@ -35,7 +35,7 @@ const Signup = () => {
       // sanitize phone to digits only (DB expects digits)
       const phoneDigits = phone ? phone.replace(/\D/g, "") : null;
 
-      const res = await axios.post("http://localhost:5000/api/users", {
+      const res = await axios.post("http://localhost:5001/api/users", {
         username: username,
         email: email,
         password_hash: password,
@@ -55,10 +55,13 @@ const Signup = () => {
       setInterest2("");
       setInterest3("");
     } catch (err) {
+      console.error("Signup error:", err);
       if (err.response?.data?.message) {
         setError(err.response.data.message);
+      } else if (err.message) {
+        setError(`Network error: ${err.message}`);
       } else {
-        setError("Failed to create account");
+        setError("Failed to create account. Please try again.");
       }
     } finally {
       setLoading(false);
@@ -67,7 +70,7 @@ const Signup = () => {
 
   return (
     <div className="bg-blue-200 h-screen flex items-center justify-center flex-col gap-10">
-      <div className="bg-white rounded-xl py-10 px-20 shadow-lg flex flex-col gap-10">
+      <div className="bg-white rounded-xl py-10 px-20 shadow-lg flex flex-col gap-10 w-[35%]">
         <h1 className="font-bold text-4xl text-center">Sign Up</h1>
 
         {error && <p className="text-red-500 text-center">{error}</p>}

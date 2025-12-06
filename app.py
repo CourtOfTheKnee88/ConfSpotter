@@ -224,7 +224,7 @@ def run_tests():
     print("All tests passed!")
 
 
-CORS(app, origins=["http://localhost:5173"])
+CORS(app, resources={r"/api/*": {"origins": ["http://localhost:5173"]}}, supports_credentials=True)
 
 def validate_password_strength(password):
     """Validate password meets security requirements"""
@@ -488,8 +488,8 @@ def create_user():
         cursor = conn.cursor()
 
         cursor.execute("""
-            CALL CheckUserExists(%s, %s, @exists_flag, @existing_user_id);
-        """, (data.get("email"), data.get("Phone")))
+            CALL CheckUserExists(%s, %s, %s, @exists_flag, @existing_user_id);
+        """, (data.get("email"), data.get("Phone"), data.get("username")))
 
         cursor.execute("SELECT @exists_flag, @existing_user_id")
         exists_flag, existing_user_id = cursor.fetchone()
@@ -497,7 +497,7 @@ def create_user():
         if exists_flag == 1:
             cursor.close()
             conn.close()
-            return jsonify({"message": "User with this email or username phone number already exists"}), 409
+            return jsonify({"message": "User with this email, username, or phone number already exists"}), 409
 
         sql = """
             INSERT INTO user (username, password_hash, email, Phone, Interest_1, Interest_2, Interest_3)

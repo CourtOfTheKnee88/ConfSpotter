@@ -26,6 +26,7 @@ DROP PROCEDURE IF EXISTS CheckUserExists //
 CREATE PROCEDURE CheckUserExists(
     IN user_email VARCHAR(255),
     IN user_phone CHAR(10),
+    IN user_name VARCHAR(255),
     OUT exists_flag BOOLEAN,
     OUT existing_user_id INT
 )
@@ -36,7 +37,8 @@ BEGIN
     SELECT COUNT(*), MAX(ID) INTO user_count, found_user_id
     FROM user
     WHERE (email = user_email AND user_email IS NOT NULL)
-       OR (Phone = user_phone AND user_phone IS NOT NULL);
+       OR (Phone = user_phone AND user_phone IS NOT NULL)
+       OR (username = user_name AND user_name IS NOT NULL);
     
     IF user_count > 0 THEN
         SET exists_flag = TRUE;
