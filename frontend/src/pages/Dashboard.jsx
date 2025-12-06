@@ -9,7 +9,7 @@ const Dashboard = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  // Load conferences from MySQL-backed API
+  // Load conferences from Flask + MySQL API
   useEffect(() => {
     fetch("http://localhost:5000/conferences")
       .then((res) => {
@@ -26,7 +26,7 @@ const Dashboard = () => {
       });
   }, []);
 
-  // Toggle starred conferences (client-side)
+  // Toggle starred conferences (client-side only)
   const toggleFavorite = (CID) => {
     if (favorites.includes(CID)) {
       setFavorites(favorites.filter((id) => id !== CID));
@@ -38,9 +38,9 @@ const Dashboard = () => {
     setTimeout(() => setSuccess(""), 2000);
   };
 
-  // Search filter (Title comes from MySQL)
+  // Search filter
   const filteredConferences = conferences.filter((conf) =>
-    conf.Title?.toLowerCase().includes(searchTerm.toLowerCase())
+    conf.Title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   // Starred conferences
@@ -48,9 +48,9 @@ const Dashboard = () => {
     favorites.includes(conf.CID)
   );
 
-  // Upcoming conferences (based on Start_Date)
+  // Upcoming conferences (future dates only)
   const upcomingConfs = [...conferences]
-    .filter((c) => c.Start_Date)
+    .filter((conf) => new Date(conf.Start_Date) > new Date())
     .sort(
       (a, b) => new Date(a.Start_Date) - new Date(b.Start_Date)
     )
@@ -86,12 +86,15 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Feedback Messages */}
+        {/* Messages */}
+        {loading && <p className="text-gray-500 mb-4">Loading conferences...</p>}
+
         {error && (
           <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">
             {error}
           </div>
         )}
+
         {success && (
           <div className="mb-4 p-3 bg-green-100 text-green-700 rounded">
             {success}
@@ -111,16 +114,25 @@ const Dashboard = () => {
 
         {/* Starred Conferences */}
         <section className="mb-10">
-          <h2 className="text-xl font-semibold mb-4">Your Starred Conferences</h2>
+          <h2 className="text-xl font-semibold mb-4">
+            Your Starred Conferences
+          </h2>
+
           {starredConfs.length === 0 ? (
-            <p className="text-gray-500">You haven’t starred any conferences yet.</p>
+            <p className="text-gray-500">
+              You haven’t starred any conferences yet.
+            </p>
           ) : (
             <div className="space-y-3">
               {starredConfs.map((conf) => (
-                <div key={conf.CID} className="bg-white p-4 rounded shadow">
+                <div
+                  key={conf.CID}
+                  className="bg-white p-4 rounded shadow"
+                >
                   <h3 className="font-semibold">{conf.Title}</h3>
                   <p className="text-sm text-gray-600">
-                    Conference ID: {conf.CID}
+                    Starts:{" "}
+                    {new Date(conf.Start_Date).toLocaleDateString()}
                   </p>
                 </div>
               ))}
@@ -130,16 +142,25 @@ const Dashboard = () => {
 
         {/* Upcoming Conferences */}
         <section className="mb-10">
-          <h2 className="text-xl font-semibold mb-4">Upcoming Conferences</h2>
+          <h2 className="text-xl font-semibold mb-4">
+            Upcoming Conferences
+          </h2>
+
           {upcomingConfs.length === 0 ? (
-            <p className="text-gray-500">No upcoming conferences found.</p>
+            <p className="text-gray-500">
+              No upcoming conferences found.
+            </p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               {upcomingConfs.map((conf) => (
-                <div key={conf.CID} className="bg-white p-4 rounded shadow">
+                <div
+                  key={conf.CID}
+                  className="bg-white p-4 rounded shadow"
+                >
                   <h3 className="font-semibold">{conf.Title}</h3>
                   <p className="text-sm">
-                    Starts: {new Date(conf.Start_Date).toLocaleDateString()}
+                    Starts:{" "}
+                    {new Date(conf.Start_Date).toLocaleDateString()}
                   </p>
                 </div>
               ))}
@@ -150,6 +171,7 @@ const Dashboard = () => {
         {/* All Conferences */}
         <section>
           <h2 className="text-xl font-semibold mb-4">All Conferences</h2>
+
           <div className="space-y-4">
             {filteredConferences.map((conf) => (
               <div
@@ -159,7 +181,8 @@ const Dashboard = () => {
                 <div>
                   <h3 className="font-semibold">{conf.Title}</h3>
                   <p className="text-sm text-gray-600">
-                    Conference ID: {conf.CID}
+                    Starts:{" "}
+                    {new Date(conf.Start_Date).toLocaleDateString()}
                   </p>
                 </div>
 
@@ -171,7 +194,9 @@ const Dashboard = () => {
                       : "bg-blue-600 text-white hover:bg-blue-700"
                   }`}
                 >
-                  {favorites.includes(conf.CID) ? "★ Starred" : "Star"}
+                  {favorites.includes(conf.CID)
+                    ? "★ Starred"
+                    : "Star"}
                 </button>
               </div>
             ))}
