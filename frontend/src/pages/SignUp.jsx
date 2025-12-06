@@ -1,7 +1,8 @@
-import React, { useState } from "react";
-import axios from "axios";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Signup = () => {
+  const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -9,6 +10,10 @@ const Signup = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
+
+  function goToLogin() {
+    navigate("/");
+  }
 
   const handleSignup = async (e) => {
     e.preventDefault();
@@ -22,84 +27,104 @@ const Signup = () => {
 
     setLoading(true);
     try {
-      const res = await axios.post("http://localhost:5000/api/users", {
-        username: username,
-        email: email,
-        password_hash: password,
+      const response = await fetch("http://localhost:5001/api/users", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: username,
+          email: email,
+          password_hash: password,
+        }),
       });
 
-      setSuccess("Account created successfully!");
-      setUsername("");
-      setEmail("");
-      setPassword("");
-      setConfirmPassword("");
-    } catch (err) {
-      if (err.response?.data?.message) {
-        setError(err.response.data.message);
+      const data = await response.json();
+
+      if (response.ok) {
+        setSuccess("Account created successfully! Redirecting to login...");
+        setUsername("");
+        setEmail("");
+        setPassword("");
+        setConfirmPassword("");
+        setTimeout(() => {
+          goToLogin();
+        }, 2000);
       } else {
-        setError("Server error — please try again later.");
+        setError(data.message || "Failed to create account");
       }
+    } catch (err) {
+      setError("Network error — please try again later.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
-      <div style={{ textAlign: 'center', width: '100%', maxWidth: 420, padding: 16 }}>
-        <h2>Signup</h2>
+    <div className="bg-blue-200 h-screen flex items-center justify-center flex-col gap-10">
+      <div className="bg-white rounded-xl py-10 px-20 shadow-lg flex flex-col gap-10">
+        <h1 className="font-bold text-4xl text-center">Sign Up</h1>
 
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-        {success && <p style={{ color: 'green' }}>{success}</p>}
+        {error && <p className="text-red-500 text-center">{error}</p>}
+        {success && <p className="text-green-500 text-center">{success}</p>}
 
-        <form onSubmit={handleSignup} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, marginTop: 8 }}>
+        <form onSubmit={handleSignup} className="flex flex-col gap-6">
           <input
-            type="username"
-            placeholder="Enter username"
+            type="text"
+            placeholder="Username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
-            style={{ width: '100%', padding: 10, boxSizing: 'border-box' }}
+            className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
           <input
             type="email"
-            placeholder="Enter email"
+            placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            style={{ width: '100%', padding: 10, boxSizing: 'border-box' }}
+            className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
-
           <input
             type="password"
-            placeholder="Enter password"
+            placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            style={{ width: '100%', padding: 10, boxSizing: 'border-box' }}
+            className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
-
           <input
             type="password"
-            placeholder="Enter confirm password"
+            placeholder="Confirm Password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
-            style={{ width: '100%', padding: 10, boxSizing: 'border-box' }}
+            className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
-
           <button
             type="submit"
             disabled={loading}
-            style={{ color: 'white', backgroundColor: loading ? '#ccc' : '#007bff', border: 'none', padding: '10px 16px', cursor: loading ? 'not-allowed' : 'pointer', borderRadius: 4, width: '100%' }}
+            className={`text-white px-4 py-2 rounded-lg ${
+              loading
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-blue-500 hover:bg-blue-600"
+            }`}
           >
-            {loading ? "Creating account..." : "Signup"}
+            {loading ? "Creating account..." : "Sign Up"}
           </button>
         </form>
+
+        <div className="text-center">
+          <button
+            onClick={goToLogin}
+            className="text-blue-500 hover:text-blue-600 underline"
+          >
+            Already have an account? Login
+          </button>
+        </div>
       </div>
     </div>
   );
 };
 
 export default Signup;
-
