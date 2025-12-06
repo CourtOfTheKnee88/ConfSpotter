@@ -20,7 +20,7 @@ function ConferenceInfo() {
   const listAll = async () => {
     setMessage("Loading...");
     try {
-      const data = await fetchJson("/conferences");
+      const data = await fetchJson("/api/conferences");
       setConferences(data);
       setMessage(`${data.length} total conferences`);
     } catch (e) {
@@ -33,7 +33,7 @@ function ConferenceInfo() {
     try {
       const q = query.trim();
       const data = await fetchJson(
-        "/conferences" + (q ? `?query=${encodeURIComponent(q)}` : "")
+        "/api/conferences" + (q ? `?query=${encodeURIComponent(q)}` : "")
       );
       setConferences(data);
       setMessage(`${data.length} result(s)`);
@@ -45,7 +45,7 @@ function ConferenceInfo() {
   const loadDetail = async (id) => {
     setMessage("Loading details...");
     try {
-      const data = await fetchJson(`/conferences/${id}`);
+      const data = await fetchJson(`/api/conferences/${id}`);
       setDetail(data);
       setMessage("");
     } catch (e) {
