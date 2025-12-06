@@ -2,6 +2,7 @@ USE confspotter;
 
 -- Procedure to check if a conference name already exists in the database
 DELIMITER //
+DROP PROCEDURE IF EXISTS CheckConferenceExists //
 CREATE PROCEDURE CheckConferenceExists(
     IN conference_title VARCHAR(255),
     OUT conferenceExists BOOLEAN
@@ -21,6 +22,7 @@ DELIMITER ;
 
 -- Procedure to check if a user with given email or phone number already exists
 DELIMITER //
+DROP PROCEDURE IF EXISTS CheckUserExists //
 CREATE PROCEDURE CheckUserExists(
     IN user_email VARCHAR(255),
     IN user_phone CHAR(10),
@@ -64,6 +66,7 @@ DELIMITER ;
 
 -- Stored procedure to manually clean up expired conferences
 DELIMITER //
+DROP PROCEDURE IF EXISTS CleanupExpiredConferences //
 CREATE PROCEDURE CleanupExpiredConferences()
 BEGIN
     DECLARE deleted_count INT DEFAULT 0;
@@ -71,4 +74,5 @@ BEGIN
     WHERE End_Date < NOW();
     SELECT ROW_COUNT() AS conferences_deleted;
 END //
+DELIMITER ;
 DELIMITER ;

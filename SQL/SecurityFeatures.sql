@@ -25,15 +25,3 @@ CREATE TABLE IF NOT EXISTS LoginAttempts(
 );
 
 
--- Password Strength Enforcement Trigger
-DELIMITER //
-CREATE TRIGGER enforce_password_strength
-BEFORE INSERT ON `user`
-FOR EACH ROW
-BEGIN
-    IF LENGTH(NEW.password_hash) < 8 THEN
-        SET MESSAGE_TEXT = 'Password must be at least 8 characters long';
-    END IF;
-END //
-DELIMITER ;
-
