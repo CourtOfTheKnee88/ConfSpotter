@@ -139,3 +139,30 @@ ON Papers (Topic, CID);
 -- Index for multi-table join for conferences title and location
 CREATE INDEX idx_conference_title_location
 ON Conferences (Title, LID);
+
+-- Natural Join
+SELECT CID, Title, City, State
+FROM Conferences
+NATURAL JOIN Location;
+
+-- Left Outer Join
+SELECT c.Title, p.Topic
+FROM Conferences c
+LEFT JOIN Papers p ON c.CID = p.CID;
+
+-- Full Outer Join
+SELECT c.Title, p.Topic
+FROM Conferences c
+LEFT JOIN Papers p ON c.CID = p.CID
+UNION
+SELECT c.Title, p.Topic
+FROM Conferences c
+RIGHT JOIN Papers p ON c.CID = p.CID;
+
+-- Supporting Indexes
+
+CREATE INDEX idx_conferences_lid_cid
+ON Conferences (LID, CID);
+
+CREATE INDEX idx_papers_topic_cid
+ON Papers (Topic, CID);

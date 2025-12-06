@@ -70,18 +70,31 @@ def parse_date(val):
     raise ValueError(f"Unsupported date value: {val}")
 
 # Routes
-@app.get('/api/conferences')
-def get_all_conferences():
+@app.route('/conferences', methods=['GET'])
+def get_conferences():
     try:
         conn = get_connection()
         cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM Conferences;")
+
+        cursor.execute("""
+            SELECT
+                CID,
+                Title,
+                Start_Date,
+                End_Date
+            FROM Conferences
+        """)
+
         conferences = cursor.fetchall()
+
         cursor.close()
         conn.close()
+
         return jsonify(conferences), 200
+
     except Error as e:
         return jsonify({"error": str(e)}), 500
+
 
 @app.route('/api/conferences/<int:conf_id>', methods=['GET'])
 def get_conference(conf_id):
