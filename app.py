@@ -371,13 +371,21 @@ def test_database():
 
 # PAPERS API:
 
-# Get all papers
+# Get all papers (optionally filter by conference ID)
 @app.get("/api/papers")
 def get_papers():
     try:
         conn = get_connection()
         cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM Papers;")
+        
+        # Check if conferenceId query parameter is provided
+        conference_id = request.args.get('conferenceId')
+        
+        if conference_id:
+            cursor.execute("SELECT * FROM Papers WHERE CID = %s;", (conference_id,))
+        else:
+            cursor.execute("SELECT * FROM Papers;")
+        
         papers = cursor.fetchall()
         cursor.close()
         conn.close()

@@ -1,146 +1,164 @@
 import { useState, useEffect } from "react";
 
-function ConferenceInfo() {
-  const [apiBase] = useState("http://localhost:5001");
-  const [query, setQuery] = useState("");
-  const [conferences, setConferences] = useState([]);
-  const [detail, setDetail] = useState(null);
-  const [message, setMessage] = useState("");
+function ConferenceInfo({ selectedConference, closeDetails }) {
+  const [papers, setPapers] = useState([]);
+  const [paperLoading, setPaperLoading] = useState(false);
+  const [error, setError] = useState(null);
 
+  // Fetch papers when conference is selected
   useEffect(() => {
-    listAll();
-  }, []);
-
-  const fetchJson = async (path) => {
-    const resp = await fetch(apiBase + path);
-    if (!resp.ok) throw new Error(`${resp.status} ${resp.statusText}`);
-    return await resp.json();
-  };
-
-  const listAll = async () => {
-    setMessage("Loading...");
-    try {
-      const data = await fetchJson("/api/conferences");
-      setConferences(data);
-      setMessage(`${data.length} total conferences`);
-    } catch (e) {
-      setMessage("Error fetching conferences");
+    if (selectedConference?.CID || selectedConference?.id) {
+      fetchPapers(selectedConference.CID || selectedConference.id);
     }
-  };
+  }, [selectedConference]);
 
-  const searchConferences = async () => {
-    setMessage("Searching...");
+  // Fetch papers for the selected conference
+  const fetchPapers = async (conferenceId) => {
+    setPaperLoading(true);
+    setError(null);
     try {
-      const q = query.trim();
-      const data = await fetchJson(
-        "/api/conferences" + (q ? `?query=${encodeURIComponent(q)}` : "")
+      const response = await fetch(
+        `http://localhost:5001/api/papers?conferenceId=${conferenceId}`
       );
-      setConferences(data);
-      setMessage(`${data.length} result(s)`);
-    } catch (e) {
-      setMessage("Error searching conferences");
+      if (!response.ok) throw new Error("Failed to fetch papers");
+      const data = await response.json();
+      setPapers(data);
+    } catch (err) {
+      setError(err.message);
+      setPapers([]);
     }
+    setPaperLoading(false);
   };
 
-  const loadDetail = async (id) => {
-    setMessage("Loading details...");
-    try {
-      const data = await fetchJson(`/api/conferences/${id}`);
-      setDetail(data);
-      setMessage("");
-    } catch (e) {
-      setMessage("Error loading details");
-    }
-  };
-
-  const hideDetail = () => setDetail(null);
+  if (!selectedConference) return null;
 
   return (
-    <div style={{ padding: 20, fontFamily: "Arial" }}>
-      <h1>Conference Search</h1>
-      <input
-        style={{ padding: 8, marginRight: 8, width: "60%" }}
-        placeholder="Search by name, acronym, or location"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") searchConferences();
-        }}
-      />
-      <button onClick={searchConferences} style={{ marginRight: 4 }}>
-        Search
-      </button>
-      <button onClick={listAll}>List All</button>
-      <div style={{ marginTop: 12, color: "#555" }}>{message}</div>
+    <div
+      className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
+      onClick={closeDetails}
+    >
+      <div
+        className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto m-4"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="p-6">
+          {/* Header */}
+          <div className="flex justify-between items-start mb-4">
+            <h2 className="text-2xl font-bold text-gray-800">
+              {selectedConference.name || selectedConference.Title}
+            </h2>
+            <button
+              onClick={closeDetails}
+              className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+            >
+              ✖
+            </button>
+          </div>
 
-      {conferences.length > 0 && (
-        <table
-          style={{ width: "100%", marginTop: 12, borderCollapse: "collapse" }}
-        >
-          <thead>
-            <tr>
-              <th>Conference</th>
-              <th>Location</th>
-              <th>Dates</th>
-            </tr>
-          </thead>
-          <tbody>
-            {conferences.map((c) => (
-              <tr
-                key={c.id}
-                style={{ cursor: "pointer" }}
-                onClick={() => loadDetail(c.id)}
-              >
-                <td>
-                  {c.name}
-                  <div style={{ fontSize: 12, color: "#888" }}>{c.acronym}</div>
-                </td>
-                <td style={{ fontSize: 12 }}>{c.location}</td>
-                <td style={{ fontSize: 12 }}>
-                  {c.start_date}
-                  {c.end_date ? " - " + c.end_date : ""}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+          {/* Conference Details */}
+          <div className="space-y-3 mb-6">
+            <div>
+              <span className="font-semibold text-gray-700">Start Date: </span>
+              <span className="text-gray-600">
+                {new Date(
+                  selectedConference.start_date || selectedConference.Start_Date
+                ).toLocaleDateString()}
+              </span>
+            </div>
 
-      {detail && (
-        <div
-          style={{
-            marginTop: 12,
-            padding: 12,
-            border: "1px solid #eee",
-            borderRadius: 6,
-            background: "#f8f8f8",
-          }}
-        >
-          <h3>{detail.name}</h3>
-          <div style={{ fontSize: 12, color: "#888" }}>{detail.acronym}</div>
-          <p>
-            <strong>Location:</strong> {detail.location}
-          </p>
-          <p>
-            <strong>Dates:</strong> {detail.start_date}
-            {detail.end_date ? " - " + detail.end_date : ""}
-          </p>
-          <p>
-            <strong>URL:</strong>{" "}
-            {detail.url ? (
-              <a href={detail.url} target="_blank" rel="noopener noreferrer">
-                {detail.url}
-              </a>
-            ) : (
-              "N/A"
+            <div>
+              <span className="font-semibold text-gray-700">End Date: </span>
+              <span className="text-gray-600">
+                {new Date(
+                  selectedConference.end_date || selectedConference.End_Date
+                ).toLocaleDateString()}
+              </span>
+            </div>
+
+            {(selectedConference.location || selectedConference.Location) && (
+              <div>
+                <span className="font-semibold text-gray-700">Location: </span>
+                <span className="text-gray-600">
+                  {selectedConference.location || selectedConference.Location}
+                </span>
+              </div>
             )}
-          </p>
-          <p style={{ fontSize: 12, color: "#888" }}>
-            Created: {detail.created_at}
-          </p>
-          <button onClick={hideDetail}>Close</button>
+
+            {(selectedConference.description || selectedConference.Descrip) && (
+              <div>
+                <span className="font-semibold text-gray-700">
+                  Description:{" "}
+                </span>
+                <p className="text-gray-600 mt-1">
+                  {selectedConference.description || selectedConference.Descrip}
+                </p>
+              </div>
+            )}
+
+            {(selectedConference.url ||
+              selectedConference.URL ||
+              selectedConference.link) && (
+              <div>
+                <span className="font-semibold text-gray-700">Website: </span>
+                <a
+                  href={
+                    selectedConference.url ||
+                    selectedConference.URL ||
+                    selectedConference.link
+                  }
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline break-all"
+                >
+                  {selectedConference.url ||
+                    selectedConference.URL ||
+                    selectedConference.link}
+                </a>
+              </div>
+            )}
+          </div>
+
+          {/* Papers Section */}
+          <div className="border-t pt-4">
+            <h3 className="text-xl font-semibold mb-3">Associated Papers</h3>
+
+            {paperLoading && <p className="text-gray-500">Loading papers...</p>}
+
+            {error && (
+              <p className="text-red-600">Error loading papers: {error}</p>
+            )}
+
+            {!paperLoading && !error && papers.length === 0 && (
+              <p className="text-gray-500">
+                No papers found for this conference.
+              </p>
+            )}
+
+            {!paperLoading && papers.length > 0 && (
+              <ul className="space-y-2">
+                {papers.map((paper, index) => (
+                  <li
+                    key={paper.PID || index}
+                    className="p-3 bg-gray-50 rounded hover:bg-gray-100 transition"
+                  >
+                    <div className="font-medium text-gray-800">
+                      {paper.Topic}
+                    </div>
+                    <div className="text-sm text-gray-600 mt-1">
+                      Type: {paper.TypeOfPaper}
+                    </div>
+                    {paper.DueDate && (
+                      <div className="text-sm text-gray-600">
+                        Due Date: {new Date(paper.DueDate).toLocaleDateString()}
+                      </div>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }
