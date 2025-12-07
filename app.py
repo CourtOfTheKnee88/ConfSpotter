@@ -407,6 +407,20 @@ def create_user():
         conn = get_connection()
         cursor = conn.cursor()
 
+<<<<<<< Updated upstream
+=======
+        cursor.execute("""
+            SELECT CheckUserExists(%s, %s, %s) AS exists_flag;
+        """, (data.get("email"), data.get("Phone"), data.get("username")))
+
+        exists_flag = cursor.fetchone()[0]
+        
+        if exists_flag == 1:
+            cursor.close()
+            conn.close()
+            return jsonify({"message": "User with this email, username, or phone number already exists"}), 409
+
+>>>>>>> Stashed changes
         sql = """
             INSERT INTO user (username, password_hash, email, Phone, Interest_1, Interest_2, Interest_3)
             VALUES (%s, %s, %s, %s, %s, %s, %s)
