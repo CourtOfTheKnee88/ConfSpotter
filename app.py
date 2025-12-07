@@ -1,16 +1,24 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime, date
+from flask_cors import CORS
+from datetime import datetime, date, timedelta
 import sys
+import os
+import re
+import json
+from dotenv import load_dotenv
+from Python.connection import get_connection
+import mysql.connector
+from mysql.connector import Error
+import subprocess
+from apscheduler.schedulers.background import BackgroundScheduler
+
+load_dotenv()
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///conferences.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-# Initialize SQLAlchemy
 db = SQLAlchemy(app)
-
-# Database Model
 class Conference(db.Model):
     __tablename__ = 'conferences'
 
@@ -62,19 +70,75 @@ def parse_date(val):
     raise ValueError(f"Unsupported date value: {val}")
 
 # Routes
-@app.route('/conferences', methods=['GET'])
+@app.route('/api/conferences', methods=['GET'])
 def get_conferences():
-    conferences = Conference.query.all()
-    return jsonify([c.to_dict() for c in conferences]), 200
+    try:
+        conn = get_connection()
+        cursor = conn.cursor(dictionary=True)
 
-@app.route('/conferences/<int:conf_id>', methods=['GET'])
+        cursor.execute("""
+            SELECT
+                CID,
+                Title,
+                Start_Date,
+                End_Date
+            FROM Conferences
+        """)
+
+        conferences = cursor.fetchall()
+
+        cursor.close()
+        conn.close()
+
+        return jsonify(conferences), 200
+
+    except Error as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/conferences/<int:conf_id>', methods=['GET'])
 def get_conference(conf_id):
-    conference = Conference.query.get(conf_id)
-    if not conference:
-        return jsonify({"error": "Conference not found"}), 404
-    return jsonify(conference.to_dict()), 200
+    try:
+        print(f"[DEBUG] Fetching conference with CID={conf_id}")
+        conn = get_connection()
+        cursor = conn.cursor(dictionary=True)
 
-@app.route('/conferences', methods=['POST'])
+        query = """
+            SELECT
+                c.CID as id,
+                c.Title as name,
+                c.Start_Date as start_date,
+                c.End_Date as end_date,
+                c.Descrip as description,
+                c.link as url,
+                CONCAT_WS(', ', l.City, l.State, l.Country) as location
+            FROM Conferences c
+            LEFT JOIN Location l ON c.LID = l.LID
+            WHERE c.CID = %s
+        """
+        
+        cursor.execute(query, (conf_id,))
+        conference = cursor.fetchone()
+
+        print(f"[DEBUG] Query executed for CID={conf_id}, Result: {conference}")
+
+        cursor.close()
+        conn.close()
+
+        if not conference:
+            print(f"[DEBUG] Conference not found for CID={conf_id}")
+            return jsonify({"error": "Conference not found"}), 404
+
+        return jsonify(conference), 200
+
+    except Error as e:
+        print(f"[ERROR] Database error: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+    except Exception as e:
+        print(f"[ERROR] Unexpected error: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/conferences', methods=['POST'])
 def create_conference():
     data = request.json or {}
 
@@ -101,7 +165,7 @@ def create_conference():
 
     return jsonify(new_conf.to_dict()), 201
 
-@app.route('/conferences/<int:conf_id>', methods=['PUT'])
+@app.route('/api/conferences/<int:conf_id>', methods=['PUT'])
 def update_conference(conf_id):
     conference = Conference.query.get(conf_id)
     if not conference:
@@ -129,7 +193,7 @@ def update_conference(conf_id):
 
     return jsonify(conference.to_dict()), 200
 
-@app.route('/conferences/<int:conf_id>', methods=['DELETE'])
+@app.route('/api/conferences/<int:conf_id>', methods=['DELETE'])
 def delete_conference(conf_id):
     conference = Conference.query.get(conf_id)
     if not conference:
@@ -208,16 +272,77 @@ def run_tests():
     print("All tests passed!")
 
 
-from flask_cors import CORS
-import os
-from dotenv import load_dotenv
-from Python.connection import get_connection
-import mysql.connector
-from mysql.connector import Error
+CORS(app, resources={r"/api/*": {"origins": ["http://localhost:5173"]}}, supports_credentials=True)
 
-load_dotenv()
+def validate_password_strength(password):
+    """Validate password meets security requirements"""
+    if len(password) < 8:
+        return False, "Password must be at least 8 characters long"
+    if not re.search(r'[A-Z]', password):
+        return False, "Password must contain at least one uppercase letter"
+    if not re.search(r'[a-z]', password):
+        return False, "Password must contain at least one lowercase letter"
+    if not re.search(r'[0-9]', password):
+        return False, "Password must contain at least one number"
+    return True, "Password is valid"
 
-CORS(app, origins=["http://localhost:5173"])
+def log_audit(user_id, username, operation_type, old_values=None, new_values=None):
+    """Log operations to AuditLog table"""
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO AuditLog (user_id, username, operation_type, old_values, new_values)
+            VALUES (%s, %s, %s, %s, %s)
+        """, (
+            user_id,
+            username,
+            operation_type,
+            json.dumps(old_values) if old_values else None,
+            json.dumps(new_values) if new_values else None
+        ))
+        conn.commit()
+        cursor.close()
+        conn.close()
+    except Exception as e:
+        print(f"Audit logging error: {str(e)}")
+
+def check_rate_limit(username):
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+  
+        fifteen_mins_ago = datetime.now() - timedelta(minutes=15)
+        cursor.execute("""
+            SELECT COUNT(*) FROM LoginAttempts 
+            WHERE username = %s 
+            AND attempt_time > %s 
+            AND success = FALSE
+        """, (username, fifteen_mins_ago))
+        
+        failed_attempts = cursor.fetchone()[0]
+        cursor.close()
+        conn.close()
+        
+        return failed_attempts >= 5
+    except Exception as e:
+        print(f"Rate limit check error: {str(e)}")
+        return False
+
+def log_login_attempt(username, success):
+    """Log login attempt to LoginAttempts table"""
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO LoginAttempts (username, success)
+            VALUES (%s, %s)
+        """, (username, success))
+        conn.commit()
+        cursor.close()
+        conn.close()
+    except Exception as e:
+        print(f"Login attempt logging error: {str(e)}")
 
 @app.route('/', methods=['GET'])
 def home():
@@ -247,12 +372,12 @@ def test_database():
 # PAPERS API:
 
 # Get all papers
-@app.get("/papers")
+@app.get("/api/papers")
 def get_papers():
     try:
         conn = get_connection()
         cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM Paper;")
+        cursor.execute("SELECT * FROM Papers;")
         papers = cursor.fetchall()
         cursor.close()
         conn.close()
@@ -262,7 +387,7 @@ def get_papers():
 
 
 # Get single paper by ID
-@app.get("/papers/<int:paper_id>")
+@app.get("/api/papers/<int:paper_id>")
 def get_paper(paper_id):
     try:
         conn = get_connection()
@@ -277,7 +402,7 @@ def get_paper(paper_id):
 
 
 # Create a new paper
-@app.post("/papers")
+@app.post("/api/papers")
 def create_paper():
     data = request.json
     try:
@@ -306,7 +431,7 @@ def create_paper():
 
 
 # Update paper
-@app.put("/papers/<int:paper_id>")
+@app.put("/api/papers/<int:paper_id>")
 def update_paper(paper_id):
     data = request.json
     try:
@@ -341,7 +466,7 @@ def update_paper(paper_id):
 
 
 # Delete a paper
-@app.delete("/papers/<int:paper_id>")
+@app.delete("/api/papers/<int:paper_id>")
 def delete_paper(paper_id):
     try:
         conn = get_connection()
@@ -362,7 +487,7 @@ def delete_paper(paper_id):
 #Models used: ChatGPT-5, VS copilot
 
 #get all users
-@app.get("/users")
+@app.get("/api/users")
 def get_all_users():    
     try:
         conn = get_connection()
@@ -376,7 +501,7 @@ def get_all_users():
         return jsonify({"error": str(e)}), 500
 
 #get user by ID
-@app.get("/users/<int:user_id>")
+@app.get("/api/users/<int:user_id>")
 def get_user(user_id):
     try:
         conn = get_connection()
@@ -394,7 +519,6 @@ def get_user(user_id):
 def create_user():
     data = request.json
     try:
-        # Validate required fields
         if not data.get("username"):
             return jsonify({"message": "Username is required"}), 400
         if not data.get("email"):
@@ -404,23 +528,25 @@ def create_user():
         if not data.get("Interest_1"):
             return jsonify({"message": "At least one Interest is required"}), 400
         
+        is_valid, message = validate_password_strength(data.get("password_hash"))
+        if not is_valid:
+            return jsonify({"message": message}), 400
+        
         conn = get_connection()
         cursor = conn.cursor()
 
-<<<<<<< Updated upstream
-=======
         cursor.execute("""
-            SELECT CheckUserExists(%s, %s, %s) AS exists_flag;
+            CALL CheckUserExists(%s, %s, %s, @exists_flag, @existing_user_id);
         """, (data.get("email"), data.get("Phone"), data.get("username")))
 
-        exists_flag = cursor.fetchone()[0]
+        cursor.execute("SELECT @exists_flag, @existing_user_id")
+        exists_flag, existing_user_id = cursor.fetchone()
         
         if exists_flag == 1:
             cursor.close()
             conn.close()
             return jsonify({"message": "User with this email, username, or phone number already exists"}), 409
 
->>>>>>> Stashed changes
         sql = """
             INSERT INTO user (username, password_hash, email, Phone, Interest_1, Interest_2, Interest_3)
             VALUES (%s, %s, %s, %s, %s, %s, %s)
@@ -437,6 +563,18 @@ def create_user():
         ))
 
         conn.commit()
+        
+        log_audit(
+            user_id=None,
+            username=data["username"],
+            operation_type="CREATE_USER",
+            new_values={
+                "username": data["username"],
+                "email": data.get("email"),
+                "phone": data.get("Phone")
+            }
+        )
+        
         cursor.close()
         conn.close()
 
@@ -449,12 +587,27 @@ def create_user():
         return jsonify({"message": f"Unexpected error: {str(e)}"}), 500
 
 #update user
-@app.put("/users/<int:user_id>")
+@app.put("/api/users/<int:user_id>")
 def update_user(user_id):
     data = request.json
     try:
         conn = get_connection()
-        cursor = conn.cursor()
+        cursor = conn.cursor(dictionary=True)
+        
+        cursor.execute("SELECT * FROM user WHERE ID = %s", (user_id,))
+        old_user = cursor.fetchone()
+        
+        if not old_user:
+            cursor.close()
+            conn.close()
+            return jsonify({"error": "User not found"}), 404
+        
+        if data.get("password_hash"):
+            is_valid, message = validate_password_strength(data.get("password_hash"))
+            if not is_valid:
+                cursor.close()
+                conn.close()
+                return jsonify({"message": message}), 400
 
         sql = """
             UPDATE user
@@ -480,6 +633,23 @@ def update_user(user_id):
         ))
 
         conn.commit()
+        
+        log_audit(
+            user_id=user_id,
+            username=old_user["username"],
+            operation_type="UPDATE_USER",
+            old_values={
+                "username": old_user["username"],
+                "email": old_user["email"],
+                "phone": old_user["Phone"]
+            },
+            new_values={
+                "username": data["username"],
+                "email": data.get("email"),
+                "phone": data.get("Phone")
+            }
+        )
+        
         cursor.close()
         conn.close()
 
@@ -489,13 +659,34 @@ def update_user(user_id):
         return jsonify({"error": str(e)}), 500
 
 #delete user
-@app.delete("/users/<int:user_id>")
+@app.delete("/api/users/<int:user_id>")
 def delete_user(user_id):
     try:
         conn = get_connection()
-        cursor = conn.cursor()
+        cursor = conn.cursor(dictionary=True)
+        
+        cursor.execute("SELECT * FROM user WHERE ID = %s;", (user_id,))
+        user_data = cursor.fetchone()
+        
+        if not user_data:
+            cursor.close()
+            conn.close()
+            return jsonify({"error": "User not found"}), 404
+        
         cursor.execute("DELETE FROM user WHERE ID = %s;", (user_id,))
         conn.commit()
+        
+        log_audit(
+            user_id=user_id,
+            username=user_data["username"],
+            operation_type="DELETE_USER",
+            old_values={
+                "username": user_data["username"],
+                "email": user_data["email"],
+                "phone": user_data["Phone"]
+            }
+        )
+        
         cursor.close()
         conn.close()
         return jsonify({"message": "User deleted successfully."}), 200
@@ -503,24 +694,41 @@ def delete_user(user_id):
         return jsonify({"error": str(e)}), 500
     
 #verify user login
-@app.post("/users/verify-login")
+@app.post("/api/users/verify-login")
 def verify_login():
     data = request.json
-    username = data.get("username")
+    login_input = data.get("login")  # Can be username or email
     password_hash = data.get("password_hash")
 
     try:
+        if check_rate_limit(login_input):
+            return jsonify({"message": "Too many failed login attempts. Please try again in 15 minutes."}), 429
+        
         conn = get_connection()
         cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM user WHERE username = %s AND password_hash = %s;", (username, password_hash))
+        cursor.execute("SELECT * FROM user WHERE (username = %s OR email = %s) AND password_hash = %s;", (login_input, login_input, password_hash))
         user = cursor.fetchone()
         cursor.close()
         conn.close()
 
         if user:
+            log_login_attempt(login_input, True)
+            log_audit(
+                user_id=user["ID"],
+                username=user["username"],
+                operation_type="LOGIN_SUCCESS"
+            )
+            
             return jsonify({"message": "Login successful.", "user": user}), 200
         else:
-            return jsonify({"message": "Invalid username or password."}), 401
+            log_login_attempt(login_input, False)
+            log_audit(
+                user_id=None,
+                username=login_input,
+                operation_type="LOGIN_FAILED"
+            )
+            
+            return jsonify({"message": "Invalid username/email or password."}), 401
 
     except Error as e:
         return jsonify({"error": str(e)}), 500
@@ -732,4 +940,4 @@ if __name__ == '__main__':
         # Ensure DB and tables exist before running the server in production/dev
         with app.app_context():
             db.create_all()
-        app.run(host='0.0.0.0', port=5000, debug=False, use_reloader=False)
+        app.run(host='0.0.0.0', port=5001, debug=False, use_reloader=False)

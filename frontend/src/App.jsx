@@ -4,10 +4,8 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
 import Dashboard from "./pages/Dashboard";
-import ConferenceInfo from "./pages/ConferenceInfo";
+import ConferenceInfo from "./pages/Fickett_ConferenceInfo";
 import PaperPage from "./pages/Paper";
-
-
 
 function App() {
   return (

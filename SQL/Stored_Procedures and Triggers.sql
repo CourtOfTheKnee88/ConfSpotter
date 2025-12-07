@@ -2,6 +2,7 @@ USE confspotter;
 
 -- Procedure to check if a conference name already exists in the database
 DELIMITER //
+DROP PROCEDURE IF EXISTS CheckConferenceExists //
 CREATE PROCEDURE CheckConferenceExists(
     IN conference_title VARCHAR(255),
     OUT conferenceExists BOOLEAN
@@ -19,36 +20,33 @@ BEGIN
 END //
 DELIMITER ;
 
--- Function to check if a user with given email or phone number already exists
--- Returns 1 if exists, 0 if not (compatible with triggers)
+-- Procedure to check if a user with given email or phone number already exists
 DELIMITER //
-<<<<<<< Updated upstream
+DROP PROCEDURE IF EXISTS CheckUserExists //
 CREATE PROCEDURE CheckUserExists(
     IN user_email VARCHAR(255),
     IN user_phone CHAR(10),
+    IN user_name VARCHAR(255),
     OUT exists_flag BOOLEAN,
     OUT existing_user_id INT
 )
-=======
-DROP PROCEDURE IF EXISTS CheckUserExists //
-DROP FUNCTION IF EXISTS CheckUserExists //
-CREATE FUNCTION CheckUserExists(
-    user_email VARCHAR(255),
-    user_phone CHAR(10),
-    user_name VARCHAR(255)
-) RETURNS BOOLEAN
-DETERMINISTIC
-READS SQL DATA
->>>>>>> Stashed changes
 BEGIN
     DECLARE user_count INT DEFAULT 0;
+    DECLARE found_user_id INT DEFAULT NULL;
     
-    SELECT COUNT(*) INTO user_count
+    SELECT COUNT(*), MAX(ID) INTO user_count, found_user_id
     FROM user
     WHERE (email = user_email AND user_email IS NOT NULL)
-       OR (Phone = user_phone AND user_phone IS NOT NULL);
+       OR (Phone = user_phone AND user_phone IS NOT NULL)
+       OR (username = user_name AND user_name IS NOT NULL);
     
-    RETURN user_count > 0;
+    IF user_count > 0 THEN
+        SET exists_flag = TRUE;
+        SET existing_user_id = found_user_id;
+    ELSE
+        SET exists_flag = FALSE;
+        SET existing_user_id = NULL;
+    END IF;
 END //
 DELIMITER ;
 
@@ -70,6 +68,7 @@ DELIMITER ;
 
 -- Stored procedure to manually clean up expired conferences
 DELIMITER //
+DROP PROCEDURE IF EXISTS CleanupExpiredConferences //
 CREATE PROCEDURE CleanupExpiredConferences()
 BEGIN
     DECLARE deleted_count INT DEFAULT 0;
@@ -77,4 +76,5 @@ BEGIN
     WHERE End_Date < NOW();
     SELECT ROW_COUNT() AS conferences_deleted;
 END //
+DELIMITER ;
 DELIMITER ;
