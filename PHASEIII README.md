@@ -69,3 +69,8 @@ Once complete open a new terminal and run ``cd frontend && npm run dev``
 - Reduced Bugs and Inconsistencies
 - System as a whole is more reliable (to users and devs)
 - No more states of confusion (through Isolation)
+
+## Advanced Database Feature: Backups and Recoveries (Seth Tedder) \
+Every twelve hours mysqldump is used to create a .sql file that, if run, recreates every table and populates them with the data stored at the time of the backups creation. \
+Health checks are performed every ten minutes to check that all tables are present.  If a table can't be reached, then the backup is run and the application carries on. \
+
