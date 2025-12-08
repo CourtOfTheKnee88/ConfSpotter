@@ -82,6 +82,9 @@ def get_conferences():
                 Title,
                 Start_Date,
                 End_Date
+                DESCRIP,
+                link,
+                LID
             FROM Conferences
         """)
 
@@ -740,7 +743,104 @@ def verify_login():
 
     except Error as e:
         return jsonify({"error": str(e)}), 500
-    
+
+#-------------------
+# FAVORITES/STARRED CONFERENCES
+#-------------------
+
+@app.route('/api/users/<int:user_id>/favorites', methods=['GET'])
+def get_user_favorites(user_id):
+    """Get all starred conferences for a user"""
+    try:
+        conn = get_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        # Create favorites table if it doesn't exist
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS UserFavorites (
+                ID INT AUTO_INCREMENT PRIMARY KEY,
+                user_ID INT NOT NULL,
+                conference_ID INT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE KEY unique_favorite (user_ID, conference_ID),
+                FOREIGN KEY (user_ID) REFERENCES user(ID) ON DELETE CASCADE,
+                FOREIGN KEY (conference_ID) REFERENCES Conferences(CID) ON DELETE CASCADE
+            )
+        """)
+        
+        cursor.execute("""
+            SELECT conference_ID 
+            FROM UserFavorites 
+            WHERE user_ID = %s
+        """, (user_id,))
+        
+        favorites = [row['conference_ID'] for row in cursor.fetchall()]
+        
+        cursor.close()
+        conn.close()
+        
+        return jsonify({"favorites": favorites}), 200
+        
+    except Error as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/users/<int:user_id>/favorites/<int:conference_id>', methods=['POST'])
+def add_favorite(user_id, conference_id):
+    """Add a conference to user's favorites"""
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        
+        # Create favorites table if it doesn't exist
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS UserFavorites (
+                ID INT AUTO_INCREMENT PRIMARY KEY,
+                user_ID INT NOT NULL,
+                conference_ID INT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE KEY unique_favorite (user_ID, conference_ID),
+                FOREIGN KEY (user_ID) REFERENCES user(ID) ON DELETE CASCADE,
+                FOREIGN KEY (conference_ID) REFERENCES Conferences(CID) ON DELETE CASCADE
+            )
+        """)
+        
+        cursor.execute("""
+            INSERT IGNORE INTO UserFavorites (user_ID, conference_ID) 
+            VALUES (%s, %s)
+        """, (user_id, conference_id))
+        
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
+        return jsonify({"message": "Conference added to favorites"}), 201
+        
+    except Error as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/users/<int:user_id>/favorites/<int:conference_id>', methods=['DELETE'])
+def remove_favorite(user_id, conference_id):
+    """Remove a conference from user's favorites"""
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute("""
+            DELETE FROM UserFavorites 
+            WHERE user_ID = %s AND conference_ID = %s
+        """, (user_id, conference_id))
+        
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
+        return jsonify({"message": "Conference removed from favorites"}), 200
+        
+    except Error as e:
+        return jsonify({"error": str(e)}), 500
+
 #-------------------
 #BACKUP AND RECOVERY 
 #-------------------
