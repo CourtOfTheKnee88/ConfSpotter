@@ -54,6 +54,11 @@ const Signup = () => {
       setInterest1("");
       setInterest2("");
       setInterest3("");
+
+      // Redirect to login page after 1.5 seconds
+      setTimeout(() => {
+        navigate("/");
+      }, 1500);
     } catch (err) {
       console.error("Signup error:", err);
       if (err.response?.data?.message) {

@@ -49,7 +49,7 @@ function ConferenceInfo({ selectedConference, closeDetails }) {
             </h2>
             <button
               onClick={closeDetails}
-              className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+              className="text-gray-500 text-2xl font-bold hover:text-red-600"
             >
               ✖
             </button>
