@@ -1112,7 +1112,10 @@ DB_NAME = os.environ.get("DB_NAME")
 @app.route("/api/create-backup", methods=["POST"])
 def create_backup_api():
     # Checks current status of database and restores to last backup if problem is found, ensuring that no backup is created that is missing tables.
-    scheduled_health_check()
+    try:
+        scheduled_health_check()
+    except Exception as e:
+        pass  # ignore errors in health check during backup
     os.makedirs(BACKUP_DIR, exist_ok=True)
     conn = get_connection()
     cursor = conn.cursor()
