@@ -53,3 +53,12 @@ Conference Information card/dashboard - Sam
 Help Links:
 https://tailwindcss.com/docs/installation/using-vite \
 https://react.dev/ 
+
+## How to Set Up
+Add the env file to the base ConfSpotter Folder \
+Rename the env to include the . in front of it so it should fully read .env \
+If done corretly the .env file will be grayed out 
+In the .env file change the DB password to your DB password and change the user to root if in needed in the username line
+
+If on Mac open a terminal and run ``bash setup.sh`` (There is a .bat file for windows but it has not been tested)\ 
+Once complete open a new terminal and run ``cd frontend && npm run dev``
