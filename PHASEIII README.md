@@ -62,3 +62,10 @@ In the .env file change the DB password to your DB password and change the user 
 
 If on Mac open a terminal and run ``bash setup.sh`` (There is a .bat file for windows but it has not been tested)\ 
 Once complete open a new terminal and run ``cd frontend && npm run dev``
+
+## ACID Compliance & Transaction Management
+- Guarantees Data Integrity
+- Error Handling is Simplified
+- Reduced Bugs and Inconsistencies
+- System as a whole is more reliable (to users and devs)
+- No more states of confusion (through Isolation)
