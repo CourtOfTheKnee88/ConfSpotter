@@ -12,6 +12,7 @@ import mysql.connector
 from mysql.connector import Error
 import subprocess
 from apscheduler.schedulers.background import BackgroundScheduler
+import bcrypt
 
 load_dotenv()
 
@@ -289,6 +290,15 @@ def validate_password_strength(password):
         return False, "Password must contain at least one number"
     return True, "Password is valid"
 
+def hash_password(password):
+    """Hash a password using bcrypt"""
+    salt = bcrypt.gensalt()
+    return bcrypt.hashpw(password.encode('utf-8'), salt).decode('utf-8')
+
+def verify_password(password, password_hash):
+    """Verify a password against its hash"""
+    return bcrypt.checkpw(password.encode('utf-8'), password_hash.encode('utf-8'))
+
 def log_audit(user_id, username, operation_type, old_values=None, new_values=None):
     """Log operations to AuditLog table"""
     try:
@@ -350,6 +360,174 @@ def log_login_attempt(username, success):
 @app.route('/', methods=['GET'])
 def home():
     return jsonify({"message": "ConfSpotter API is running!"})
+
+# Authentication endpoints
+@app.route('/api/signup', methods=['POST'])
+@app.route('/api/register', methods=['POST'])
+def signup():
+    """Register a new user with password hashing"""
+    data = request.json
+    
+    if not data:
+        return jsonify({"error": "No data provided"}), 400
+    
+    # Validate required fields
+    if not data.get("username"):
+        return jsonify({"error": "Username is required"}), 400
+    if not data.get("email"):
+        return jsonify({"error": "Email is required"}), 400
+    if not data.get("password"):
+        return jsonify({"error": "Password is required"}), 400
+    if not data.get("Interest_1"):
+        return jsonify({"error": "At least one Interest is required"}), 400
+    
+    # Validate password strength
+    is_valid, message = validate_password_strength(data.get("password"))
+    if not is_valid:
+        return jsonify({"error": message}), 400
+    
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        # Check if user already exists
+        cursor.execute("""
+            CALL CheckUserExists(%s, %s, %s, @exists_flag, @existing_user_id);
+        """, (data.get("email"), data.get("Phone"), data.get("username")))
+
+        cursor.execute("SELECT @exists_flag, @existing_user_id")
+        exists_flag, existing_user_id = cursor.fetchone()
+        
+        if exists_flag == 1:
+            cursor.close()
+            conn.close()
+            return jsonify({"error": "User with this email, username, or phone number already exists"}), 409
+
+        # Hash the password
+        password_hash = hash_password(data.get("password"))
+
+        # Insert new user
+        sql = """
+            INSERT INTO user (username, password_hash, email, Phone, Interest_1, Interest_2, Interest_3)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+        """
+
+        cursor.execute(sql, (
+            data["username"],
+            password_hash,
+            data.get("email"),
+            data.get("Phone"),
+            data.get("Interest_1"),
+            data.get("Interest_2"),
+            data.get("Interest_3")
+        ))
+
+        user_id = cursor.lastrowid
+        conn.commit()
+        
+        # Log the registration
+        log_audit(
+            user_id=user_id,
+            username=data["username"],
+            operation_type="USER_REGISTERED",
+            new_values={
+                "username": data["username"],
+                "email": data.get("email"),
+                "phone": data.get("Phone")
+            }
+        )
+        
+        cursor.close()
+        conn.close()
+
+        return jsonify({
+            "message": "User registered successfully",
+            "user": {
+                "id": user_id,
+                "username": data["username"],
+                "email": data.get("email")
+            }
+        }), 201
+        
+    except Error as e:
+        print(f"Database error: {str(e)}")
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
+    except Exception as e:
+        print(f"Unexpected error: {str(e)}")
+        return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
+
+@app.route('/api/login', methods=['POST'])
+def login():
+    """Login user with password verification"""
+    data = request.json
+    
+    if not data:
+        return jsonify({"error": "No data provided"}), 400
+    
+    login_input = data.get("login")  # Can be username or email
+    password = data.get("password")
+    
+    if not login_input:
+        return jsonify({"error": "Username or email is required"}), 400
+    if not password:
+        return jsonify({"error": "Password is required"}), 400
+
+    try:
+        # Check rate limiting
+        if check_rate_limit(login_input):
+            return jsonify({"error": "Too many failed login attempts. Please try again in 15 minutes."}), 429
+        
+        conn = get_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        # Find user by username or email
+        cursor.execute(
+            "SELECT * FROM user WHERE username = %s OR email = %s",
+            (login_input, login_input)
+        )
+        user = cursor.fetchone()
+        
+        cursor.close()
+        conn.close()
+
+        # Verify user exists and password matches
+        if user and verify_password(password, user["password_hash"]):
+            log_login_attempt(login_input, True)
+            log_audit(
+                user_id=user["ID"],
+                username=user["username"],
+                operation_type="LOGIN_SUCCESS"
+            )
+            
+            # Return user info (excluding password hash)
+            user_response = {
+                "id": user["ID"],
+                "username": user["username"],
+                "email": user["email"],
+                "phone": user["Phone"],
+                "interests": [user["Interest_1"], user["Interest_2"], user["Interest_3"]]
+            }
+            
+            return jsonify({
+                "message": "Login successful",
+                "user": user_response
+            }), 200
+        else:
+            log_login_attempt(login_input, False)
+            log_audit(
+                user_id=None,
+                username=login_input,
+                operation_type="LOGIN_FAILED"
+            )
+            
+            return jsonify({"error": "Invalid username/email or password"}), 401
+
+    except Error as e:
+        print(f"Database error: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+    except Exception as e:
+        print(f"Unexpected error: {str(e)}")
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/api/test-db', methods=['GET'])
 def test_database():
@@ -534,12 +712,14 @@ def create_user():
             return jsonify({"message": "Username is required"}), 400
         if not data.get("email"):
             return jsonify({"message": "Email is required"}), 400
-        if not data.get("password_hash"):
+        if not data.get("password_hash") and not data.get("password"):
             return jsonify({"message": "Password is required"}), 400
         if not data.get("Interest_1"):
             return jsonify({"message": "At least one Interest is required"}), 400
         
-        is_valid, message = validate_password_strength(data.get("password_hash"))
+        # Support both 'password' and 'password_hash' fields for backwards compatibility
+        password_field = data.get("password") or data.get("password_hash")
+        is_valid, message = validate_password_strength(password_field)
         if not is_valid:
             return jsonify({"message": message}), 400
         
@@ -558,6 +738,10 @@ def create_user():
             conn.close()
             return jsonify({"message": "User with this email, username, or phone number already exists"}), 409
 
+        # Hash password if plain password provided
+        password_field = data.get("password") or data.get("password_hash")
+        password_hash = hash_password(password_field)
+        
         sql = """
             INSERT INTO user (username, password_hash, email, Phone, Interest_1, Interest_2, Interest_3)
             VALUES (%s, %s, %s, %s, %s, %s, %s)
@@ -565,7 +749,7 @@ def create_user():
 
         cursor.execute(sql, (
             data["username"],
-            data.get("password_hash"),
+            password_hash,
             data.get("email"),
             data.get("Phone"),
             data.get("Interest_1"),
@@ -613,12 +797,16 @@ def update_user(user_id):
             conn.close()
             return jsonify({"error": "User not found"}), 404
         
-        if data.get("password_hash"):
-            is_valid, message = validate_password_strength(data.get("password_hash"))
+        # Handle password update with validation and hashing
+        password_to_update = old_user["password_hash"]
+        if data.get("password") or data.get("password_hash"):
+            password_field = data.get("password") or data.get("password_hash")
+            is_valid, message = validate_password_strength(password_field)
             if not is_valid:
                 cursor.close()
                 conn.close()
                 return jsonify({"message": message}), 400
+            password_to_update = hash_password(password_field)
 
         sql = """
             UPDATE user
@@ -634,7 +822,7 @@ def update_user(user_id):
 
         cursor.execute(sql, (
             data["username"],
-            data.get("password_hash"),
+            password_to_update,
             data.get("email"),
             data.get("Phone"),
             data.get("Interest_1"),
@@ -704,12 +892,13 @@ def delete_user(user_id):
     except Error as e:
         return jsonify({"error": str(e)}), 500
     
-#verify user login
+#verify user login (DEPRECATED - use /api/login instead)
 @app.post("/api/users/verify-login")
 def verify_login():
+    """Legacy endpoint - use /api/login for proper password hashing"""
     data = request.json
     login_input = data.get("login")  # Can be username or email
-    password_hash = data.get("password_hash")
+    password = data.get("password_hash") or data.get("password")
 
     try:
         if check_rate_limit(login_input):
@@ -717,12 +906,12 @@ def verify_login():
         
         conn = get_connection()
         cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM user WHERE (username = %s OR email = %s) AND password_hash = %s;", (login_input, login_input, password_hash))
+        cursor.execute("SELECT * FROM user WHERE username = %s OR email = %s", (login_input, login_input))
         user = cursor.fetchone()
         cursor.close()
         conn.close()
 
-        if user:
+        if user and verify_password(password, user["password_hash"]):
             log_login_attempt(login_input, True)
             log_audit(
                 user_id=user["ID"],
@@ -741,6 +930,67 @@ def verify_login():
             
             return jsonify({"message": "Invalid username/email or password."}), 401
 
+    except Error as e:
+        return jsonify({"error": str(e)}), 500
+
+#-------------------
+# PERSONALIZED RECOMMENDATIONS
+#-------------------
+
+@app.route('/api/users/<int:user_id>/recommendations', methods=['GET'])
+def get_user_recommendations(user_id):
+    """Get personalized conference recommendations based on user interests"""
+    try:
+        conn = get_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        # Get user interests
+        cursor.execute(
+            "SELECT Interest_1, Interest_2, Interest_3 FROM user WHERE ID = %s",
+            (user_id,)
+        )
+        row = cursor.fetchone()
+        
+        if not row:
+            cursor.close()
+            conn.close()
+            return jsonify({"error": "User not found"}), 404
+        
+        # Extract and filter interests
+        interests = [row.get("Interest_1"), row.get("Interest_2"), row.get("Interest_3")]
+        interests = [i.strip() for i in interests if i and i.strip()]
+        
+        if not interests:
+            cursor.close()
+            conn.close()
+            return jsonify({"recommendations": []}), 200
+
+        # Fetch all conferences
+        cursor.execute("SELECT CID, Title, Descrip, Start_Date, End_Date FROM Conferences")
+        conferences = cursor.fetchall()
+        
+        # Match conferences with user interests
+        matched_conferences = []
+        for conf in conferences:
+            title = conf.get("Title", "").lower()
+            description = conf.get("Descrip", "").lower()
+            matched_interests = []
+            
+            for interest in interests:
+                interest_lower = interest.lower()
+                if interest_lower in title or interest_lower in description:
+                    matched_interests.append(interest)
+            
+            # If any interests matched, add this conference to results
+            if matched_interests:
+                conf['Matched_Interests'] = matched_interests
+                matched_conferences.append(conf)
+        
+        cursor.close()
+        conn.close()
+        
+        return jsonify({"recommendations": matched_conferences}), 200
+        
     except Error as e:
         return jsonify({"error": str(e)}), 500
 
