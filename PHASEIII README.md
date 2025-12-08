@@ -48,35 +48,41 @@ DUE DECEMBER 5th 11:59 PM \
 Login - Courtney \
 Sign up - Seth \
 User Dashboard - Esther \
-Conference Information card/dashboard - Sam 
+Conference Information card/dashboard - Sam
 
 Help Links:
 https://tailwindcss.com/docs/installation/using-vite \
-https://react.dev/ 
+https://react.dev/
 
 ## How to Set Up
+
 Add the env file to the base ConfSpotter Folder \
 Rename the env to include the . in front of it so it should fully read .env \
-If done corretly the .env file will be grayed out 
+If done corretly the .env file will be grayed out
 In the .env file change the DB password to your DB password and change the user to root if in needed in the username line
 
-If on Mac open a terminal and run ``bash setup.sh`` (There is a .bat file for windows but it has not been tested)\ 
-Once complete open a new terminal and run ``cd frontend && npm run dev``
+If on Mac open a terminal and run `bash setup.sh` (There is a .bat file for windows but it has not been tested)\
+Once complete open a new terminal and run `cd frontend && npm run dev`
 
 ## ACID Compliance & Transaction Management
+
 - Guarantees Data Integrity
 - Error Handling is Simplified
 - Reduced Bugs and Inconsistencies
 - System as a whole is more reliable (to users and devs)
 - No more states of confusion (through Isolation)
+  shell.sql, Python/connection.py, app.py
 
-## Advanced Database Feature: Backups and Recoveries (Seth Tedder) 
-Every twelve hours mysqldump is used to create a .sql file that, if run, recreates every table and populates them with the data stored at the time of the backups creation. 
-Health checks are performed every ten minutes to check that all tables are present.  If a table can't be reached, then the backup is run and the application carries on. 
+## Advanced Database Feature: Backups and Recoveries (Seth Tedder)
 
-## Security and Authentication 
+Every twelve hours mysqldump is used to create a .sql file that, if run, recreates every table and populates them with the data stored at the time of the backups creation.
+Health checks are performed every ten minutes to check that all tables are present. If a table can't be reached, then the backup is run and the application carries on.
+app.py, ./backups
+
+## Security and Authentication
+
 - Audit Logging
-- Password stength enforcement
+- Password strength enforcement
 - Rate limiting
 - Password hashing
-
+  Implemented in SecurityFeatures.sql and app.py
