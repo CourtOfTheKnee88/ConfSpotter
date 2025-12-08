@@ -21,14 +21,30 @@ conda activate base
 echo "Installing dependencies..."
 pip install -r requirements.txt
 
+# Load environment variables from .env file
+if [ -f .env ]; then
+    echo "Loading database configuration from .env file..."
+    export $(grep -v '^#' .env | xargs)
+else
+    echo "Error: .env file not found. Please create one based on the template."
+    exit 1
+fi
+
+# Set default values if not provided in .env
+DB_HOST=${DB_HOST:-localhost}
+DB_USER=${DB_USER:-ConfSpotter}
+DB_PASSWORD=${DB_PASSWORD:-chickenlittle}
+DB_NAME=${DB_NAME:-confspotter}
+DB_PORT=${DB_PORT:-3306}
+
 echo "Setting up the database..."
-mysql -u ConfSpotter -pchickenlittle < SQL/shell.sql 2>&1 | grep -v "Warning" | grep -v "already exists" || true
+mysql -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" -p"$DB_PASSWORD" < SQL/shell.sql 2>&1 | grep -v "Warning" | grep -v "already exists" || true
 wait
-mysql -u ConfSpotter -pchickenlittle confspotter < "SQL/SecurityFeatures.sql" 2>&1 | grep -v "Warning" | grep -v "already exists" | grep -v "SUPER privilege" || true
+mysql -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" < "SQL/SecurityFeatures.sql" 2>&1 | grep -v "Warning" | grep -v "already exists" | grep -v "SUPER privilege" || true
 wait
-mysql -u ConfSpotter -pchickenlittle confspotter < "SQL/sample_project_data.sql" 2>&1 | grep -v "Warning" | grep -v "Duplicate entry" || true
+mysql -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" < "SQL/sample_project_data.sql" 2>&1 | grep -v "Warning" | grep -v "Duplicate entry" || true
 wait
-mysql -u ConfSpotter -pchickenlittle confspotter < "SQL/Stored_Procedures and Triggers.sql" 2>&1 | grep -v "Warning" || true
+mysql -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" < "SQL/Stored_Procedures and Triggers.sql" 2>&1 | grep -v "Warning" || true
 wait
 
 echo "Populating database..."
