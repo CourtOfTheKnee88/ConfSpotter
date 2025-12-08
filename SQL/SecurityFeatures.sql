@@ -1,7 +1,6 @@
 -- Security Features Added
 -- 1.) Audit Logging
 -- 2.) Rate Limiting for Login Attempts
--- 3.) Password Strength Enforcement
 
 USE confspotter;
 
