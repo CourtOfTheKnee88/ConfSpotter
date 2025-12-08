@@ -754,7 +754,10 @@ DB_NAME = os.environ.get("DB_NAME")
 #Creates a backup of the database and saves it to the backups directory
 @app.route("/api/create-backup", methods=["POST"])
 def create_backup_api():
-    scheduled_health_check()
+    try:
+        scheduled_health_check()
+    except Exception as e:
+        pass  # ignore errors in health check during backup
     os.makedirs(BACKUP_DIR, exist_ok=True)
     conn = get_connection()
     cursor = conn.cursor()
