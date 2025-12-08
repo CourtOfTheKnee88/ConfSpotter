@@ -1,6 +1,6 @@
 # Conference Radar – "ConfSpotter"
 
-# IF LOOKING FOR LATEST VERION SEE PHASE III READ ME
+# IF LOOKING FOR LATEST VERSION SEE PHASE III READ ME
 
 Problem: Academic researchers miss important conferences and publication opportunities due
 to poor information aggregation. This project informs students and faculty about upcoming
