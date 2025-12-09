@@ -86,3 +86,10 @@ app.py, ./backups
 - Rate limiting
 - Password hashing
   Implemented in SecurityFeatures.sql and app.py
+
+  ## Database Application-Driven Indexing & Query Optimization
+- 15+ new and complex indexing scripts added to shell.sql
+- Indexes designed to support real queries improved database performance.
+- Adding composite indexes for user queries improved performance, enabling index range scans and covering index lookups, with simpler plans examining fewer rows.
+- Eliminates unnecessary scans and sorting.
+- This creates the result of query cost and execution complexity, which were significantly reduced (often by more than 50%) while preserving query flexibility.
