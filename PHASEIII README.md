@@ -87,7 +87,7 @@ app.py, ./backups
 - Password hashing
   Implemented in SecurityFeatures.sql and app.py
 
-  ## Database Application-Driven Indexing & Query Optimization
+## Database Application-Driven Indexing & Query Optimization
 - 15+ new and complex indexing scripts added to shell.sql
 - Indexes designed to support real queries improved database performance.
 - Adding composite indexes for user queries improved performance, enabling index range scans and covering index lookups, with simpler plans examining fewer rows.
